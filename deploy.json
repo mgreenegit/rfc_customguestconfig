@@ -18,7 +18,7 @@
     "variables": {
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
-        "imageSKU": "2016-Datacenter-Server-Core",
+        "imageSKU": "2019-Datacenter-Server-Core",
         "osDiskName": "osdisk",
         "diskType": "Standard_LRS",
         "nicName": "nic0",
@@ -148,64 +148,6 @@
                 "type": "[variables('extension').type]",
                 "typeHandlerVersion": "[variables('extension').version]",
                 "autoUpgradeMinorVersion": true
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachineScaleSets",
-            "name": "[variables('vmssName')]",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2017-12-01",
-            "sku": {
-                "name": "[variables('vmSize')]",
-                "capacity": "5"
-            },
-            "properties": {
-                "upgradePolicy": {
-                    "mode": "Automatic"
-                },
-                "virtualMachineProfile": {
-                    "osProfile": {
-                        "computerNamePrefix": "[variables('vmssName')]",
-                        "adminUsername": "[parameters('adminUsername')]",
-                        "adminPassword": "[parameters('adminPassword')]"
-                    },
-                    "storageProfile": {
-                        "imageReference": {
-                            "publisher": "[variables('imagePublisher')]",
-                            "offer": "[variables('imageOffer')]",
-                            "sku": "[variables('imageSKU')]",
-                            "version": "latest"
-                        },
-                        "osDisk": {
-                            "name": "[variables('osDiskName')]",
-                            "caching": "ReadWrite",
-                            "createOption": "FromImage",
-                            "managedDisk": {
-                                "storageAccountType": "[variables('diskType')]"
-                            }
-                        }
-                    },
-                    "networkProfile": {
-                        "networkInterfaces": [
-                            {
-                                "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
-                            }
-                        ]
-                    },
-                    "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "[concat(variables('vmssName'), '/', variables('extension').name)]",
-                                "properties": {
-                                    "publisher": "Microsoft.GuestConfiguration",
-                                    "type": "[variables('extension').type]",
-                                    "typeHandlerVersion": "[variables('extension').version]",
-                                    "autoUpgradeMinorVersion": true
-                                }
-                            }
-                        ]
-                    }
-                }
             }
         }
     ],
