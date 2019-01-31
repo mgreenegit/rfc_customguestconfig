@@ -2,20 +2,122 @@
     "if": {
         "allOf": [
             {
-                "anyOf": [
-                    {
-                        "field": "type",
-                        "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                        "field": "type",
-                        "equals": "Microsoft.Compute/virtualMachineScaleSets"
-                    }
-                ]
+                "field": "type",
+                "equals": "Microsoft.Compute/virtualMachines"
             },
             {
-                "field": "Microsoft.Compute/imagePublisher",
-                "equals": "MicrosoftWindowsServer"
+                "anyOf": [
+                    {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "in": [
+                            "MicrosoftDynamicsAX",
+                            "MicrosoftWindowsDesktop",
+                            "MicrosoftVisualStudio",
+                            "incredibuild",
+                            "MicrosoftWindowsServerHPCPack",
+                            "esri"
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "MicrosoftWindowsServer"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageSKU",
+                                "notLike": "2008*"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "MicrosoftSQLServer"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageSKU",
+                                "notEquals": "SQL2008R2SP3-WS2008R2SP1"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "microsoft-dsvm"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "equals": "dsvm-windows"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "microsoft-ads"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "in": [
+                                    "standard-data-science-vm",
+                                    "windows-data-science-vm"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "batch"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "equals": "rendering-windows2016"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "center-for-internet-security-inc"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "like": "cis-windows-server-201*"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "pivotal"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "like": "bosh-windows-server*"
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "equals": "cloud-infrastructure-services"
+                            },
+                            {
+                                "field": "Microsoft.Compute/imageOffer",
+                                "like": "ad*"
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -23,10 +125,10 @@
         "effect": "deployIfNotExists",
         "details": {
             "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
+            "name": "PasswordPolicy_v0.2",
             "roleDefinitionIds": [
                 "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
             ],
-            "name": "PasswordPolicy_v0.2",
             "deployment": {
                 "properties": {
                     "mode": "incremental",
@@ -39,6 +141,22 @@
                         },
                         "configurationName": {
                             "value": "PasswordPolicy_v0.2"
+                        }
+                    },
+                    "variables": {
+                        "extension": {
+                            "name": "AzurePolicyforWindows",
+                            "type": "ConfigurationforWindows",
+                            "version": "1.0"
+                        },
+                        "configuration": {
+                            "kind": null,
+                            "name": "PasswordPolicy_v0.2",
+                            "version": "1.*",
+                            "contentUri": null,
+                            "contentHash": null,
+                            "configurationParameter": null,
+                            "configurationSetting": null
                         }
                     },
                     "template": {
@@ -55,27 +173,11 @@
                                 "type": "string"
                             }
                         },
-                        "variables": {
-                            "extension": {
-                                "name": "AzurePolicyforWindows",
-                                "type": "ConfigurationforWindows",
-                                "version": "1.0"
-                            },
-                            "configuration": {
-                                "kind": null,
-                                "name": "PasswordPolicy_v0.2",
-                                "version": "1.*",
-                                "contentUri": null,
-                                "contentHash": null,
-                                "configurationParameter": null,
-                                "configurationSetting": null
-                            }
-                        },
                         "resources": [
                             {
-                                "apiVersion": "2018-06-30-preview",
+                                "apiVersion": "2018-11-20",
                                 "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
-                                "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', variables('configuration').name)]",
+                                "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('configurationName'))]",
                                 "location": "[parameters('location')]",
                                 "properties": {
                                     "guestConfiguration": {
@@ -87,7 +189,7 @@
                                 }
                             },
                             {
-                                "apiVersion": "2017-03-30",
+                                "apiVersion": "2018-10-01",
                                 "type": "Microsoft.Compute/virtualMachines",
                                 "identity": {
                                     "type": "SystemAssigned"
@@ -96,18 +198,20 @@
                                 "location": "[parameters('location')]"
                             },
                             {
-                                "apiVersion": "2015-05-01-preview",
-                                "name": "[concat(parameters('vmName'), '/', variables('extension').name)]",
+                                "apiVersion": "2018-10-01",
+                                "name": "[concat(parameters('vmName'), '/AzurePolicyforWindows')]",
                                 "type": "Microsoft.Compute/virtualMachines/extensions",
                                 "location": "[parameters('location')]",
                                 "properties": {
                                     "publisher": "Microsoft.GuestConfiguration",
-                                    "type": "[variables('extension').type]",
-                                    "typeHandlerVersion": "[variables('extension').version]",
-                                    "autoUpgradeMinorVersion": true
+                                    "type": "ConfigurationforWindows",
+                                    "typeHandlerVersion": "1.1",
+                                    "autoUpgradeMinorVersion": true,
+                                    "settings": {},
+                                    "protectedSettings": {}
                                 },
                                 "dependsOn": [
-                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/providers/Microsoft.GuestConfiguration/guestConfigurationAssignments/',variables('configuration').name)]"
+                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/providers/Microsoft.GuestConfiguration/guestConfigurationAssignments/',parameters('configurationName'))]"
                                 ]
                             }
                         ]
