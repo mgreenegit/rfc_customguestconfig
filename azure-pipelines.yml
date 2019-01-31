@@ -49,7 +49,6 @@ steps:
 
 - powershell: |
     Update-Module 'AzureRM' -force
-    Install-Module 'AzureRM.GuestConfiguration' -AllowPreRelease -Force
   displayName: 'Update Azure PowerShell modules'
 
 - task: AzurePowerShell@3
@@ -150,9 +149,12 @@ steps:
       {
           $roleDefinitionIds | ForEach-Object {
               $roleDefId = $_.Split("/") | Select-Object -Last 1
+              Write-Host "Resource Group ID $($ResourceGroup.ResourceId)"
+              Write-Host "Object ID $($assignment.Identity.PrincipalId)"
+              Write-Host "Role Def ID $roleDefId"
               $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $assignment.Identity.PrincipalId -RoleDefinitionId $roleDefId
               If ($null -eq $roleAssignment) {
-                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $assignment.Identity.PrincipalId -RoleDefinitionId $roleDefId
+                #New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $assignment.Identity.PrincipalId -RoleDefinitionId $roleDefId
               }
           }
       }
