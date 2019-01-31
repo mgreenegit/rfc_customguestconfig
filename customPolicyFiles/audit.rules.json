@@ -2,32 +2,20 @@
     "if": {
         "allOf": [
             {
-                "anyOf": [
-                    {
-                        "field": "type",
-                        "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                        "field": "type",
-                        "equals": "Microsoft.Compute/virtualMachineScaleSets"
-                    }
-                ]
+                "field": "type",
+                "equals": "Microsoft.GuestConfiguration/guestConfigurationAssignments"
             },
             {
-                "field": "Microsoft.Compute/imagePublisher",
-                "equals": "MicrosoftWindowsServer"
+                "field": "name",
+                "equals": "PasswordPolicy_v0.2"
+            },
+            {
+                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
+                "notEquals": "Compliant"
             }
         ]
     },
     "then": {
-        "effect": "auditIfNotExists",
-        "details": {
-            "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-            "name": "PasswordPolicy_v0.2",
-            "existenceCondition": {
-                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
-                "equals": "Compliant"
-            }
-        }
+        "effect": "audit"
     }
 }
