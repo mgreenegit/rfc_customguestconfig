@@ -126,10 +126,13 @@
         "details": {
             "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
             "name": "PasswordPolicy",
-            "version": "1.1",
             "roleDefinitionIds": [
                 "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
             ],
+            "existanceCondition": {
+                "field": "version",
+                "equals": "1.1"
+            },
             "deployment": {
                 "properties": {
                     "mode": "incremental",
