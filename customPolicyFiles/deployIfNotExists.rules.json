@@ -125,7 +125,8 @@
         "effect": "deployIfNotExists",
         "details": {
             "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-            "name": "PasswordPolicy_v0.2",
+            "name": "PasswordPolicy",
+            "version": "1.1",
             "roleDefinitionIds": [
                 "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
             ],
@@ -140,19 +141,18 @@
                             "value": "[field('location')]"
                         },
                         "configurationName": {
-                            "value": "PasswordPolicy_v0.2"
+                            "value": "PasswordPolicy"
                         }
                     },
                     "variables": {
                         "extension": {
                             "name": "AzurePolicyforWindows",
-                            "type": "ConfigurationforWindows",
-                            "version": "1.0"
+                            "type": "ConfigurationforWindows"
                         },
                         "configuration": {
                             "kind": null,
-                            "name": "PasswordPolicy_v0.2",
-                            "version": "1.*",
+                            "name": "PasswordPolicy",
+                            "version": "1.1",
                             "contentUri": null,
                             "contentHash": null,
                             "configurationParameter": null,

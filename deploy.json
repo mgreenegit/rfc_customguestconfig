@@ -35,15 +35,6 @@
             "name": "AzurePolicyforWindows",
             "type": "ConfigurationforWindows",
             "version": "1.0"
-        },
-        "configuration": {
-            "kind": null,
-            "name": "StorePasswordsUsingReversibleEncryption",
-            "version": "1.*",
-            "contentUri": null,
-            "contentHash": null,
-            "configurationParameter": null,
-            "configurationSetting": null
         }
     },
     "resources": [
