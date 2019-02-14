@@ -24,23 +24,21 @@ trigger:
     - .github/*
 
 steps:
-- task: NuGetCommand@2
-  inputs:
-    command: pack
-    packagesToPack: '$(Build.SourcesDirectory)\customPolicyFiles\guestConfiguration\*.nuspec'
-    versioningScheme: '$(major).$(minor).$(BuildID)'
+- powershell: |
+    Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
+    New-GuestConfigurationPackage -Name '$(configname)' -Configuration ".\$(configname).localhost.mof" -DestinationPath ".\$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" -Verbose
+  displayName: 'Create custom configuration package'
 
-- task: NuGetCommand@2
+- task: PublishBuildArtifacts@1
   inputs:
-    command: push
-    publishVstsFeed: '2cc16164-1c2c-4d7a-a425-a4bcb97f17f0'
-    allowPackageConflicts: true
-
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: '$(configname)'
+  displayName: 'Publish package artifacts'
 
 - powershell: |
-    $artifact = 'https://pkgs.dev.azure.com/azvmguestpolicy/_apis/packaging/feeds/2cc16164-1c2c-4d7a-a425-a4bcb97f17f0/nuget/packages/$(configname)/versions/$(major).$(minor).$buildid/content'
-    $package = Invoke-WebRequest -Uri $artifact -Out '$(System.DefaultWorkingDirectory)\$(configname).$(major).$(minor).$buildid).nupkg'
-    $hash = Get-FileHash '$(System.DefaultWorkingDirectory)\$(configname).$(major).$(minor).$buildid).nupkg' | ForEach-Object {$_.Hash}
+    $artifact = (Invoke-RestMethod -Method GET -Uri 'https://dev.azure.com/azvmguestpolicy/CustomGuestConfiguration/_apis/build/builds/$(build.buildid)/artifacts?artifactName=$(configname)&api-version=4.1').resource.downloadUrl
+    $package = Invoke-WebRequest -Uri $artifact -Out '$(System.DefaultWorkingDirectory)\$(configname).zip'
+    $hash = Get-FileHash '$(System.DefaultWorkingDirectory)\$(configname).zip' | ForEach-Object {$_.Hash}
     foreach ($path in @('$(Build.SourcesDirectory)\customPolicyFiles\deployIfNotExists.rules.json','$(Build.SourcesDirectory)\deploy.json')){
       (get-content "$path").replace('"contentUri": null,',"`"contentUri`": `"$artifact`",") | set-content "$path" -force
       (get-content "$path").replace('"contentHash": null,',"`"contentHash`": `"$hash`",") | set-content "$path" -force
