@@ -26,7 +26,7 @@ trigger:
 steps:
 - powershell: |
     Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
-    New-GuestConfigurationPackage -Name '$(configname)' -Configuration ".\$(configname).localhost.mof" -DestinationPath ".\$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" -Verbose
+    New-GuestConfigurationPackage -Name '$(configname)' -Configuration ".\$(configname).localhost.mof" --DesintationPath ".\$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" -Verbose
   displayName: 'Create custom configuration package'
 
 - task: PublishBuildArtifacts@1
