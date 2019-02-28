@@ -164,7 +164,7 @@
                             },
                             "configuration": {
                                 "kind": null,
-                                "name": "PasswordPolicy",
+                                "name": "WindowsFirewallEnabled",
                                 "version": "1.1",
                                 "contentUri": null,
                                 "contentHash": null,

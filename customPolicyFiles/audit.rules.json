@@ -7,7 +7,7 @@
             },
             {
                 "field": "name",
-                "equals": "PasswordPolicy"
+                "equals": "WindowsFirewallEnabled"
             },
             {
                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
