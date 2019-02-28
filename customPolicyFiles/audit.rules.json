@@ -10,10 +10,6 @@
                 "equals": "PasswordPolicy"
             },
             {
-                "field": "version",
-                "equals": "1.1"
-            },
-            {
                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
                 "notEquals": "Compliant"
             }
