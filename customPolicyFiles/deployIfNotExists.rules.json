@@ -125,7 +125,7 @@
         "effect": "deployIfNotExists",
         "details": {
             "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-            "name": "PasswordPolicy",
+            "name": "WindowsFirewallEnabled",
             "roleDefinitionIds": [
                 "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
             ],
@@ -140,7 +140,7 @@
                             "value": "[field('location')]"
                         },
                         "configurationName": {
-                            "value": "PasswordPolicy"
+                            "value": "WindowsFirewallEnabled"
                         }
                     },
                     "template": {
