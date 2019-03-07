@@ -1,7 +1,7 @@
 # Azure Policy Custom Guest Configuration - Request for Comments
-![Azure Policy Guest Configuration](https://contosodev.blob.core.windows.net/img/GuestConfigurationIcon.jpg)
+![Azure Policy Guest Configuration](https://contosodev.blob.core.windows.net/img/GuestConfig.png)
 
-The release is currently broken (on purpose).
+[You can see public  builds for this repo here](https://dev.azure.com/azvmguestpolicy/CustomGuestConfiguration/_build).
 See the details below to understand the reasoning behind this approach.
 
 [![Build Status](https://dev.azure.com/azvmguestpolicy/CustomGuestConfiguration/_apis/build/status/Microsoft.rfc_customguestconfig?branchName=master)](https://dev.azure.com/azvmguestpolicy/CustomGuestConfiguration/_build/latest?definitionId=3?branchName=master)
