@@ -111,6 +111,18 @@ in the file
 are automatically populated during the Build phase.
 The package will be automatically created using the authoring cmdlets.
 
+### Submit your own example test
+
+If you would like to test your own content, there are two options available.
+
+- Fork this repo and connect Azure DevOps to your project.
+  This will require you to setup a new project in Azure DevOps with a service connection named 'ARM'
+  and a variable group connected to Azure KeyVault.  Additional details will be published as
+  a step by step guide.
+- Submit a PR.  Although incoming pull requests will not trigger new builds automatically,
+  we will review your code and manually trigger a build to test your content for you,
+  and follow up in the PR conversation.
+
 ## Give us feedback!
 
 We are very interested in understanding how you would leverage
