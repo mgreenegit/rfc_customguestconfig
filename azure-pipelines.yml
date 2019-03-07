@@ -162,13 +162,3 @@ steps:
               }
           }
       }
-
-- task: AzureResourceGroupDeployment@2
-  displayName: "Deploy virtual machine to Azure"
-  inputs:
-    azureSubscription: 'ARM'
-    resourceGroupName: $(resourcegroup)
-    type: 'Complete'
-    location: 'eastus2'
-    csmFile: deploy.json
-    overrideParameters: '-adminUsername $(adminUsername) -adminPassword $(adminPassword)'
