@@ -47,7 +47,7 @@ are recommended.
 In future iterations,
 custom DSC resources and 3rd party tools will also be available for testing.
 
-## User story
+### User story
 
 Dana is responsible for virtual machines running in the Azure cloud.
 She needs to be certain that for all machines,
