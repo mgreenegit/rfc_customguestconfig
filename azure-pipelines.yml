@@ -7,7 +7,7 @@ variables:
 - name: 'major'
   value: '1'
 - name: 'minor'
-  value: '1'
+  value: '2'
 - name: 'configname'
   value: 'windowsfirewallenabled'
 - name: 'resourcegroup'
@@ -32,7 +32,7 @@ steps:
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
     -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*' `
-    -DestinationPath '$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip' `
+    -DestinationPath '$(Build.ArtifactStagingDirectory)\FirewallPolicy.zip' `
     -Verbose
   displayName: 'Create custom configuration package'
 
