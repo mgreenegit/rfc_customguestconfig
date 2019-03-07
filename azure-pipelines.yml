@@ -1,7 +1,6 @@
 pool: 'Hosted VS2017'
 
-pr:
-  autoCancel: true
+pr: none
 
 variables:
 - group: vmusers
@@ -29,6 +28,7 @@ trigger:
 steps:
 - powershell: |
     Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
+    Save-Module -Name 'NetworkingDsc' -Path "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\""
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof" `
     -FilesToInclude "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*" `

@@ -8,20 +8,22 @@ See the details below to understand the reasoning behind this approach.
 
 ![Deployment Gate Status](https://vsrm.dev.azure.com/azvmguestpolicy/_apis/public/Release/badge/8cf7364a-2490-4dd7-8353-5c7e17e8728d/1/2)
 
-This repository is the home for a *theoretical* design for Azure Policy Guest Configuration
+This repository is the home for an experimental design for Azure Policy Guest Configuration
 to support customer-provided content.
 As part of an open collaboration with the community
 we welcome you to review the information on this page,
 the project examples,
+submit pull requests to test content,
 and **please provide feedback** using the survey in the
 [Issues](https://github.com/Microsoft/rfc_customguestconfig/issues)
 list.
 
-## What is the scenario we would like to support?
+## What is the scenario we would like to support
 
 In Spring 2019,
-we would like to offer support for customers to use their own content
-in Azure Policy Guest Configuration scenarios.
+we would like to offer support for customers to use their own content in
+[Azure Policy Guest Configuration](https://aka.ms/gcpol)
+scenarios.
 Azure already offers built-in Policy content to audit settings
 inside virtual machines such as which application are installed and/or not installed.
 This change would empower customers to author
@@ -34,16 +36,16 @@ Examples include:
 - Application settings
 
 To validate this scenario,
-we will work through iterations of what we will ask to be validated.
+we would like to work together with customers to test content, openly.
 
-An early iteration of this capability in preview would support
+An early iteration of this capability in preview supports
 configurations for Windows authored in Desired State Configuration
 and profiles for Linux authored in Chef Inspec.
 Only resources provided in the Guest Configuration module
-would be recommended.
+are recommended.
 
 In future iterations,
-custom DSC resources would also be recommended for testing.
+custom DSC resources and 3rd party tools will also be available for testing.
 
 ## User story
 
@@ -59,34 +61,35 @@ to be notified if any servers do not meet requirements.
 
 ## What we are proposing to support this scenario
 
-For built-in policies,
-the
+For built-in policies, the
 [Guest Configuration API](https://docs.microsoft.com/en-us/rest/api/guestconfiguration/guestconfigurationassignments/get#guestconfigurationnavigation)
 accepts a GET operation that returns properties
 including a contentURI path to the configuration package
 and contentHash value so the content can be verified.
-A potential solution to support custom content
-would be to allow a PUT operation to also set the properties
+As a solution to support custom content,
+we also allow a PUT operation to set properties
 for the location and hash value.
-This would mean the content package could be hosted in locations
-such GitHub repo's, GitHub releases, blob storage,
-or static links to NuGet feeds (pending validation).
+This means the content package can be hosted in locations
+such GitHub, cloud storage,
+or static links to NuGet feeds such as the
+[Artifact service in Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/pipeline-artifacts?view=azure-devops&tabs=yaml).
 
 We also believe there is a need for additional tooling
 to simplify the process of authoring configuration content.
-New cmdlets would be available to provide assistance for authors
-creating custom content.
-This would include validation, packaging, and publishing.
+New cmdlets in the
+[Guest Configuration module](https://www.powershellgallery.com/packages/GuestConfiguration/)
+are available to provide assistance for content authors.
+This includes validation, packaging, and publishing, including helping you to produce and publish
+Azure Policy definitions.
 
 Many organizations need to audit servers against configuration baselines
 published by third party organizations.
 A community module,
 [Baseline Management](https://github.com/microsoft/baselinemanagement)
-provides a solution to convert from Group Policy templates
-to DSC configurations,
-which would be perfect content to use in Policy as custom content.
+provides a solution to convert from Group Policy templates to DSC configurations,
+which can be used directly in Azure to audit settings in virtual machines.
 
-## Theoretical example repo
+## Live example build repo
 
 This repo demonstrates how a project
 to centrally manage a custom policy
@@ -95,20 +98,18 @@ might be organized.
 The folder
 [customPolicyFiles](https://github.com/Microsoft/rfc_customguestconfig/tree/master/customPolicyFiles)
 contains the Azure Policy definitions
-and a theoretical Password Policy
+and a theoretical firewall policy
 authored in Desired State Configuration.
 The configuration content is located
 within the guestConfiguration subfolder,
 including a custom DSC resource based on the community maintained resource
-[SecurityPolicyDSC](https://github.com/PowerShell/SecurityPolicyDsc).
+[NetworkingDsc](https://github.com/PowerShell/NetworkingDsc).
 
 The variables **contentUri** and **contentHash**
 in the file
 [deployIfNotExists.rules.json](https://github.com/Microsoft/rfc_customguestconfig/blob/master/customPolicyFiles/deployIfNotExists.rules.json#L85)
 are automatically populated during the Build phase.
-The package will be automatically created using the cmdlets
-available in the
-[Guest Configuration module](https://www.powershellgallery.com/packages/GuestConfiguration/).
+The package will be automatically created using the authoring cmdlets.
 
 ## Give us feedback!
 
