@@ -1,5 +1,5 @@
 # Azure Policy Custom Guest Configuration - Request for Comments
-![Azure Policy Guest Configuration](https://contosodev.blob.core.windows.net/img/GuestConfigX.png)
+![Azure Policy Guest Configuration](https://contosodev.blob.core.windows.net/img/GuestConfigXS.png)
 
 [You can see public  builds for this repo here](https://dev.azure.com/azvmguestpolicy/CustomGuestConfiguration/_build).
 See the details below to understand the reasoning behind this approach.
