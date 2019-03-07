@@ -29,6 +29,7 @@ steps:
 - powershell: |
     Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
     Save-Module -Name 'NetworkingDsc' -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\'
+    New-Item -Path '$(System.DefaultWorkingDirectory)\package\' -Type Directory
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
     -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*' `
