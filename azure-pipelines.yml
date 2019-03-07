@@ -32,7 +32,7 @@ steps:
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof" `
     -FilesToInclude "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*" `
-    -DesintationPath "$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" `
+    -DestinationPath "$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" `
     -Verbose
   displayName: 'Create custom configuration package'
 
