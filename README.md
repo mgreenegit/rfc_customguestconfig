@@ -13,7 +13,7 @@ to support customer-provided content.
 As part of an open collaboration with the community
 we welcome you to review the information on this page,
 the project examples,
-submit pull requests to test content,
+[submit pull requests to test content](#submit-your-own-example-test),
 and **please provide feedback** using the survey in the
 [Issues](https://github.com/Microsoft/rfc_customguestconfig/issues)
 list.
