@@ -28,11 +28,11 @@ trigger:
 steps:
 - powershell: |
     Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
-    Save-Module -Name 'NetworkingDsc' -Path "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\""
+    Save-Module -Name 'NetworkingDsc' -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\' `
     New-GuestConfigurationPackage -Name '$(configname)' `
-    -Configuration "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof" `
-    -FilesToInclude "$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*" `
-    -DestinationPath "$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip" `
+    -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
+    -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*' `
+    -DestinationPath '$(Build.ArtifactStagingDirectory)\PasswordPolicy.zip' `
     -Verbose
   displayName: 'Create custom configuration package'
 
