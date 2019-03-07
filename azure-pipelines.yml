@@ -32,8 +32,9 @@ steps:
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
     -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*' `
-    -DestinationPath '$(Build.ArtifactStagingDirectory)\FirewallPolicy.zip' `
+    -DestinationPath '$(System.DefaultWorkingDirectory)\package\FirewallPolicy.zip' `
     -Verbose
+    Expand-Archive -Path '$(System.DefaultWorkingDirectory)\package\FirewallPolicy.zip' -DestinationPath '$(Build.ArtifactStagingDirectory)'
   displayName: 'Create custom configuration package'
 
 - task: PublishBuildArtifacts@1
