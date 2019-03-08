@@ -28,11 +28,12 @@ trigger:
 steps:
 - powershell: |
     Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
-    Save-Module -Name 'NetworkingDsc' -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\'
+    New-Item -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\' -Type Directory
+    Save-Module -Name 'NetworkingDsc' -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\'
     New-Item -Path '$(System.DefaultWorkingDirectory)\package\' -Type Directory
     New-GuestConfigurationPackage -Name '$(configname)' `
     -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
-    -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\*' `
+    -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\' `
     -DestinationPath '$(System.DefaultWorkingDirectory)' `
     -Verbose
     Expand-Archive -Path '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip' -DestinationPath '$(Build.ArtifactStagingDirectory)'
