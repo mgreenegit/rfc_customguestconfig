@@ -39,13 +39,11 @@ steps:
     -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\' `
     -DestinationPath '$(System.DefaultWorkingDirectory)' `
     -Verbose
-    # Extract content package to artifact service working folder so it can be handled by Azure DevOps
-    Expand-Archive -Path '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip' -DestinationPath '$(Build.ArtifactStagingDirectory)'
   displayName: 'Create custom configuration package'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)\$(configname)'
+    pathtoPublish: '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname)\unzippedPackage\'
     artifactName: '$(configname)'
   displayName: 'Publish package artifacts'
 
