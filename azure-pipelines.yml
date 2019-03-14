@@ -41,11 +41,11 @@ steps:
     -Verbose
   displayName: 'Create custom configuration package'
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@0
   inputs:
-    pathtoPublish: '$(System.DefaultWorkingDirectory)\$(configname)\unzippedPackage\'
+    targetPath: '$(System.DefaultWorkingDirectory)\$(configname).zip'
     artifactName: '$(configname)'
-  displayName: 'Publish package artifacts'
+  displayName: 'Publish package artifact'
 
 - powershell: |
     # Get artifact details from Azure DevOps
