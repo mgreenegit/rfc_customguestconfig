@@ -48,11 +48,13 @@ steps:
   displayName: 'Publish package artifact'
 
 - powershell: |
-    # Get artifact details from Azure DevOps
-    $artifact = (Invoke-RestMethod -Method GET -Uri 'https://dev.azure.com/azvmguestpolicy/8cf7364a-2490-4dd7-8353-5c7e17e8728d/_apis/build/builds/$(build.buildid)/artifacts?artifactName=$(configname)&fileName=$(configname).zip&api-version=5.0-preview.3').resource.downloadUrl
-    # Download file and calculate hash value
-    $package = Invoke-WebRequest -Uri $artifact -Out '$(System.DefaultWorkingDirectory)\$(configname).zip'
-    $hash = Get-FileHash '$(System.DefaultWorkingDirectory)\$(configname).zip' | ForEach-Object {$_.Hash}
+    # Artifact Uri
+    # https://contosodev.blob.core.windows.net/shared/windowsfirewallenabled.zip
+    #'https://dev.azure.com/azvmguestpolicy/8cf7364a-2490-4dd7-8353-5c7e17e8728d/_apis/build/builds/242/artifacts?artifactName=$(configname)&fileId=CE16C4766ECA30B8346A1AD07E03AA8ACE52B1970D81EC22AC53F946107BAA6402&fileName=$(configname).zip&api-version=5.0-preview.3'
+
+    $artifact = 'https://contosodev.blob.core.windows.net/shared/windowsfirewallenabled.zip'
+    # Calculate hash value
+    $hash = Get-FileHash '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip' | ForEach-Object {$_.Hash}
     # Insert file URI and hash value in to definition json
     foreach ($path in @('$(Build.SourcesDirectory)\customPolicyFiles\deployIfNotExists.rules.json','$(Build.SourcesDirectory)\deploy.json')){
       (get-content "$path").replace('"contentUri": null,',"`"contentUri`": `"$artifact`",") | set-content "$path" -force
