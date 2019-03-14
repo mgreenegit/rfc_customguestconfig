@@ -43,7 +43,7 @@ steps:
 
 - task: PublishPipelineArtifact@0
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)\$(configname).zip'
+    targetPath: '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip'
     artifactName: '$(configname)'
   displayName: 'Publish package artifact'
 
