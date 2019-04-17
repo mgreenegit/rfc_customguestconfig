@@ -197,6 +197,22 @@
                                 "location": "[parameters('location')]"
                             },
                             {
+                                "apiVersion": "2018-06-01"
+                                "name": "[concat(parameters('vmName'),'/EnableHashValidation')]"
+                                "type": "Microsoft.Compute/virtualMachines/extensions"
+                                "location": "[parameters('location')]"
+                                "properties": 
+                                    {
+                                        "publisher": "Microsoft.Compute"
+                "type": "CustomScriptExtension"
+                typeHandlerVersion = '1.9'
+                settings = @{}
+                protectedSettings = @{
+                    commandToExecute = 'powershell -c \" & {if(!(Test-Path HKLM:/Software/Microsoft/Windows/DSC)){New-Item -Path HKLM:/Software/Microsoft/Windows/DSC -Force; New-ItemProperty -Path HKLM:/Software/Microsoft/Windows/DSC -Name EnableCustomPolicyHashValidation -Value 1 -PropertyType DWORD -Force}else {New-ItemProperty -Path HKLM:/Software/Microsoft/Windows/DSC -Name EnableCustomPolicyHashValidation -Value 1 -PropertyType DWORD -Force}} \" '
+                                    }
+                                }
+                            },
+                            {
                                 "apiVersion": "2018-10-01",
                                 "name": "[concat(parameters('vmName'), '/AzurePolicyforWindows')]",
                                 "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -210,7 +226,8 @@
                                     "protectedSettings": {}
                                 },
                                 "dependsOn": [
-                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/providers/Microsoft.GuestConfiguration/guestConfigurationAssignments/',parameters('configurationName'))]"
+                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/providers/Microsoft.GuestConfiguration/guestConfigurationAssignments/',parameters('configurationName'))]",
+                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/extensions','/EnableHashValidation')]"
                                 ]
                             }
                         ]
