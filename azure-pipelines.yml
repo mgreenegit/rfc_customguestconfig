@@ -38,7 +38,7 @@ steps:
     script: |
       
       # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules) -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
       
   displayName: 'Setup/validate Windows PowerShell environment'
 
