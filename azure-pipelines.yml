@@ -114,7 +114,7 @@ steps:
     inline: |
       
       # Verify Resource Group exists
-      $ResourceGroup = Get-AzRmResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
+      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
       if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
 
       # Verify Storage Account exists
