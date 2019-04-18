@@ -38,10 +38,10 @@ steps:
     script: |
       
       # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Force
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
       
       # Lint PowerShell scripts
-      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -ReportSummary -EnableExit
+      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
 
   displayName: 'Setup/validate PowerShell Core environment'
 
