@@ -113,17 +113,19 @@ steps:
     scriptType: 'inlineScript'
     inline: |
       
-      # Verify Resource Group exists
+      # Verify resource group exists
       $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
       if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
 
-      # Verify Storage Account exists
-      $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration'
+      # Verify storage account exists
+      $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -ErrorAction SilentlyContinue
       if ($null -eq $StorageAccount) {New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
       
-      $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts
+      # Verify storage container exists
+      $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts -ErrorAction SilentlyContinue
       if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Permission Off -Verbose}
 
+      # Upload files
       Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
       Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
