@@ -96,30 +96,35 @@ steps:
         -Verbose
 
       # Confirm output
+      Write-Verbose 'Validate artifacts folder:'
       Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Verbose
-      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName).zip' -Verbose
-      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName).zip' -Verbose
+      Write-Verbose 'Validate Linux artifact'
+      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Verbose
+      Write-Verbose 'Validate Windows artifact'
+      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Verbose
   
   continueOnError: 'true'
   displayName: 'Create content artifacts'
 
-- task: PowerShell@2
+- task: AzurePowerShell@3
   inputs:
-    targetType: inline
-    pwsh: 'true'
-    script: |
-
-      # Compress artifacts
+    azureSubscription: 'ARM'
+    azurePowerShellVersion: 'latestVersion'
+    scriptType: 'inlineScript'
+    inline: |
       
-        # Compress package for Linux
-        Compress-Archive -Path '$(System.DefaultWorkingDirectory)\artifacts\firewalldenabled\unzippedPackage' `
-          -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\firewalldenabled.zip' `
-          -Verbose
+      # Verify Resource Group exists
+      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
+      if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzureRMResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
 
-        # Compress package for Windows
-        Compress-Archive -Path '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled\unzippedPackage' `
-          -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled.zip' `
-          -Verbose
+      # Verify Storage Account exists
+      $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration'
+      if ($null -eq $StorageAccount) {New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
+      
+      $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts
+      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Permission Off -Verbose}
 
-  enabled: 'false'
-  displayName: '[TEMPORARY WORKAROUND] Compress file archives'
+      Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
+
+  displayName: 'Publish content to Azure storage'  
