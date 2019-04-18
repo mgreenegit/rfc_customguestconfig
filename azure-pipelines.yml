@@ -98,13 +98,13 @@ steps:
         -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
         -FilesToInclude '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\InSpecProfiles' `
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-        -Verbose -ErrorAction SilentlyContinue
+        -Verbose -ErrorAction Ignore
 
         # New guest configuration package for Windows
         New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
         -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-        -Verbose -ErrorAction SilentlyContinue
+        -Verbose -ErrorAction Ignore
 
       # Confirm output
       Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName).zip' -Verbose
@@ -119,9 +119,6 @@ steps:
     pwsh: 'true'
     script: |
 
-      # This is only a temporary fix until an error is resolved with the new package cmdlet
-      New-Item -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Type Directory
-      
       # Compress artifacts
       
         # Compress package for Linux
@@ -134,5 +131,4 @@ steps:
           -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled.zip' `
           -Verbose
 
-  enabled: 'false'
   displayName: '[TEMPORARY WORKAROUND] Compress file archives'
