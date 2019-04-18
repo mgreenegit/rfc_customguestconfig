@@ -119,15 +119,15 @@ steps:
 
       # Verify storage account exists
       $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -ErrorAction SilentlyContinue
-      if ($null -eq $StorageAccount) {New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
-      $ctx = $StorageAccount.Context
-      
+      if ($null -eq $StorageAccount) {$StorageAccount = New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
+      $Context = $StorageAccount.Context
+
       # Verify storage container exists
-      $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts -ErrorAction SilentlyContinue
-      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Context $ctx -Permission Off -Verbose}
+      $Container = $StorageAccount | Get-AzStorageContainer -Name 'artifacts' -ErrorAction SilentlyContinue
+      if ($null -eq $Container) {$Container = New-AzStorageContainer -Name 'artifacts' -Context $Context -Permission Off -Verbose}
 
       # Upload files
-      Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
-      Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
   displayName: 'Publish content to Azure storage'  
