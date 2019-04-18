@@ -113,8 +113,8 @@ steps:
     inline: |
       
       # Verify Resource Group exists
-      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
-      if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzureRMResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
+      $ResourceGroup = Get-AzRmResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
+      if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
 
       # Verify Storage Account exists
       $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration'
