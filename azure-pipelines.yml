@@ -123,7 +123,7 @@ steps:
       
       # Verify storage container exists
       $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts -ErrorAction SilentlyContinue
-      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Permission Off -Verbose}
+      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Context $StorageAccount.Context -Permission Off -Verbose}
 
       # Upload files
       Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
