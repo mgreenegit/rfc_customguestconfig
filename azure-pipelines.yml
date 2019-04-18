@@ -33,7 +33,7 @@ trigger:
 steps:
 - task: PowerShell@2
   inputs:
-    type: inline
+    targetType: inline
     pwsh: 'true'
     script: |
       
@@ -44,7 +44,7 @@ steps:
 
 - task: PowerShell@2
   inputs:
-    type: inline
+    targetType: inline
     pwsh: 'false'
     script: |
       
@@ -55,7 +55,7 @@ steps:
 
 - task: PowerShell@2
   inputs:
-    type: inline
+    targetType: inline
     pwsh: 'true'
     script: |
       
@@ -66,7 +66,7 @@ steps:
 
 - task: PowerShell@2
   inputs:
-    type: inline
+    targetType: inline
     pwsh: 'false'
     script: |
 
@@ -84,7 +84,7 @@ steps:
 
 - task: PowerShell@2
   inputs:
-    type: inline
+    targetType: inline
     pwsh: 'true'
     script: |
 
