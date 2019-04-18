@@ -31,21 +31,22 @@ trigger:
     - .github/*
 
 steps:
-- PowerShell:
-  type: inline
-  pwsh: 'true'
-  script: |
-    
-    # Install required modules from PowerShell Gallery
-    Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Force
-    
-    # Lint PowerShell scripts
-    Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -ReportSummary -EnableExit
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'true'
+    script: |
+      
+      # Install required modules from PowerShell Gallery
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Force
+      
+      # Lint PowerShell scripts
+      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -ReportSummary -EnableExit
 
   displayName: 'Setup/validate PowerShell Core environment'
 
-- PowerShell:
-  type: inline
+- task: PowerShell@2
+  targetType: inline
   pwsh: 'false'
   script: |
 
@@ -61,8 +62,8 @@ steps:
     
   displayName: 'Compile DSC MOF files'
 
-- PowerShell:
-  type: inline
+- task: PowerShell@2
+  targetType: inline
   pwsh: 'true'
   script: |
 
