@@ -1,6 +1,0 @@
-{
-    "category": "Guest Configuration",
-    "requiredProviders": [
-        "Microsoft.GuestConfiguration"
-    ]
-}
