@@ -120,10 +120,11 @@ steps:
       # Verify storage account exists
       $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -ErrorAction SilentlyContinue
       if ($null -eq $StorageAccount) {New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
+      $ctx = $StorageAccount.Context
       
       # Verify storage container exists
       $Container = $StorageAccount | Get-AzStorageContainer -Name artifacts -ErrorAction SilentlyContinue
-      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Context $StorageAccount.Context -Permission Off -Verbose}
+      if ($null -eq $Container) {New-AzStorageContainer -Name 'artifacts' -Context $ctx -Permission Off -Verbose}
 
       # Upload files
       Set-AzStorageBlobContent -Container "artifacts" -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
