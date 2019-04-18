@@ -3,20 +3,19 @@ pool: 'windows-2019'
 pr: none
 
 variables:
-- group: vmusers
-- name: 'major'
-  value: '1'
-- name: 'minor'
-  value: '2'
-- name: 'requiredModules'
-  value: 'GuestConfiguration' 
-- name: 'linuxConfigName'
-  value: 'firewalldenabled'
-- name: 'windowsConfigName'
-  value: 'windowsfirewallenabled'
-- name: 'resourcegroup'
-  value: 'contosodev-rfc_customguestconfig'
-
+  - group: vmusers
+  - name: 'major'
+    value: '1'
+  - name: 'minor'
+    value: '2'
+  - name: 'requiredModules'
+    value: 'GuestConfiguration' 
+  - name: 'linuxConfigName'
+    value: 'firewalldenabled'
+  - name: 'windowsConfigName'
+    value: 'windowsfirewallenabled'
+  - name: 'resourcegroup'
+    value: 'contosodev-rfc_customguestconfig'
 
 trigger:
   branches:
@@ -46,43 +45,45 @@ steps:
   displayName: 'Setup/validate PowerShell Core environment'
 
 - task: PowerShell@2
-  targetType: inline
-  pwsh: 'false'
-  script: |
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
 
-    # Compile DSC MOF files
-    
-      # Linux configuration
-      . $(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
-      $(linuxConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux'
+      # Compile DSC MOF files
+      
+        # Linux configuration
+        . $(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
+        $(linuxConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux'
 
-      # Windows configuration
-      . $(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
-      $(windowsConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows'
-    
+        # Windows configuration
+        . $(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
+        $(windowsConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows'
+      
   displayName: 'Compile DSC MOF files'
 
 - task: PowerShell@2
-  targetType: inline
-  pwsh: 'true'
-  script: |
+  inputs:
+    targetType: inline
+    pwsh: 'true'
+    script: |
 
-    # Create artifacts folder
-    New-Item -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Type Directory
-    
-    # Create artifacts
-    
-      # New guest configuration package for Linux
-      New-GuestConfigurationPackage -Name '$(linuxConfigName)' `
-      -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
-      -FilesToInclude '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\InSpecProfiles' `
-      -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-      -Verbose
+      # Create artifacts folder
+      New-Item -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Type Directory
+      
+      # Create artifacts
+      
+        # New guest configuration package for Linux
+        New-GuestConfigurationPackage -Name '$(linuxConfigName)' `
+        -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
+        -FilesToInclude '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\InSpecProfiles' `
+        -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
+        -Verbose
 
-      # New guest configuration package for Windows
-      New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
-      -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
-      -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-      -Verbose
+        # New guest configuration package for Windows
+        New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
+        -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
+        -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
+        -Verbose
 
   displayName: 'Create content artifacts'
