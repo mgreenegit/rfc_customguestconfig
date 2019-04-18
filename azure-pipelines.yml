@@ -127,7 +127,7 @@ steps:
       if ($null -eq $Container) {$Container = New-AzStorageContainer -Name 'artifacts' -Context $Context -Permission Off -Verbose}
 
       # Upload files
-      Set-AzStorageBlobContent -Context $Context -Container $Container -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
-      Set-AzStorageBlobContent -Context $Context -Container $Container -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
   displayName: 'Publish content to Azure storage'  
