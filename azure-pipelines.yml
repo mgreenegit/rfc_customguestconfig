@@ -98,13 +98,13 @@ steps:
         -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
         -FilesToInclude '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\InSpecProfiles' `
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-        -Verbose
+        -Verbose -ErrorAction Continue
 
         # New guest configuration package for Windows
         New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
         -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
-        -Verbose
+        -Verbose-ErrorAction Continue
 
       # Confirm output
       Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName).zip' -Verbose
