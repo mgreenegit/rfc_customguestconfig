@@ -34,17 +34,6 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: inline
-    pwsh: 'true'
-    script: |
-      
-      # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
-      
-  displayName: 'Setup/validate PowerShell Core environment'
-
-- task: PowerShell@2
-  inputs:
-    targetType: inline
     pwsh: 'false'
     script: |
       
@@ -56,7 +45,7 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: inline
-    pwsh: 'true'
+    pwsh: 'false'
     script: |
       
       # Lint PowerShell scripts
@@ -85,7 +74,7 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: inline
-    pwsh: 'true'
+    pwsh: 'false'
     script: |
 
       # Create artifacts folder
@@ -132,4 +121,5 @@ steps:
           -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled.zip' `
           -Verbose
 
+  enabled: 'false'
   displayName: '[TEMPORARY WORKAROUND] Compress file archives'
