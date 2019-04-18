@@ -107,7 +107,8 @@ steps:
         -Verbose
 
       # Confirm output
-      Get-Childitem -Path '$(System.DefaultWorkingDirectory)\artifacts\' -verbose
+      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName).zip' -Verbose
+      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName).zip' -Verbose
   
   continueOnError: 'true'
   displayName: 'Create content artifacts'
