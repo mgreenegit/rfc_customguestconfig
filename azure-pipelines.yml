@@ -109,7 +109,6 @@ steps:
 - task: AzurePowerShell@4
   inputs:
     azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
     scriptType: 'inlineScript'
     inline: |
       
