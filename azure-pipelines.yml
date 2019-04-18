@@ -106,6 +106,9 @@ steps:
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
         -Verbose
 
+      # Confirm output
+      Get-Childitem -Path '$(System.DefaultWorkingDirectory)\artifacts\' -verbose
+  
   continueOnError: 'true'
   displayName: 'Create content artifacts'
 
@@ -130,4 +133,5 @@ steps:
           -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled.zip' `
           -Verbose
 
+  enabled: 'false'
   displayName: '[TEMPORARY WORKAROUND] Compress file archives'
