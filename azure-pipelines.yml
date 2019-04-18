@@ -106,4 +106,28 @@ steps:
         -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
         -Verbose
 
+  continueOnError: 'true'
   displayName: 'Create content artifacts'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'true'
+    script: |
+
+      # This is only a temporary fix until an error is resolved with the new package cmdlet
+      New-Item -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Type Directory
+      
+      # Compress artifacts
+      
+        # Compress package for Linux
+        Compress-Archive -Path '$(System.DefaultWorkingDirectory)\artifacts\firewalldenabled\unzippedPackage' `
+          -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\firewalldenabled.zip' `
+          -Verbose
+
+        # Compress package for Windows
+        Compress-Archive -Path '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled\unzippedPackage' `
+          -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\windowsfirewallenabled.zip' `
+          -Verbose
+
+  displayName: '[TEMPORARY WORKAROUND] Compress file archives'
