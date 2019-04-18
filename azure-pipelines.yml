@@ -33,21 +33,40 @@ trigger:
 steps:
 - task: PowerShell@2
   inputs:
-    targetType: inline
+    type: inline
     pwsh: 'true'
     script: |
       
       # Install required modules from PowerShell Gallery
       Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
       
-      # Lint PowerShell scripts
-      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
-
   displayName: 'Setup/validate PowerShell Core environment'
 
 - task: PowerShell@2
   inputs:
-    targetType: inline
+    type: inline
+    pwsh: 'false'
+    script: |
+      
+      # Install required modules from PowerShell Gallery
+      Install-Module -Name $(requiredModules) -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
+      
+  displayName: 'Setup/validate Windows PowerShell environment'
+
+- task: PowerShell@2
+  inputs:
+    type: inline
+    pwsh: 'true'
+    script: |
+      
+      # Lint PowerShell scripts
+      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
+
+  displayName: 'Lint PowerShell scripts in Guest Configuration content'
+
+- task: PowerShell@2
+  inputs:
+    type: inline
     pwsh: 'false'
     script: |
 
@@ -65,7 +84,7 @@ steps:
 
 - task: PowerShell@2
   inputs:
-    targetType: inline
+    type: inline
     pwsh: 'true'
     script: |
 
