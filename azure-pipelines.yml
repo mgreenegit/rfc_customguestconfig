@@ -106,7 +106,7 @@ steps:
   continueOnError: 'true'
   displayName: 'Create content artifacts'
 
-- task: AzurePowerShell@3
+- task: AzurePowerShell@4
   inputs:
     azureSubscription: 'ARM'
     azurePowerShellVersion: 'latestVersion'
