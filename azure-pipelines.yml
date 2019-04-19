@@ -112,7 +112,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
-      resourceGroupName: $(resourceroup)
+      resourceGroupName: $(resourcegroup)
       templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.storagecontainer.json'
 
   displayName: 'Create/validate Azure storage account and container'
@@ -161,25 +161,25 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
-      resourceGroupName: $(resourceroup)
+      resourceGroupName: $(resourcegroup)
       templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
-      overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourceroup)
+      overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
-      resourceGroupName: $(resourceroup)
+      resourceGroupName: $(resourcegroup)
       templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
-      overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourceroup)
+      overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
-      resourceGroupName: $(resourceroup)
+      resourceGroupName: $(resourcegroup)
       templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
       overrideParameters: -assignmentName "firewalldenabled"
 
@@ -188,7 +188,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
-      resourceGroupName: $(resourceroup)
+      resourceGroupName: $(resourcegroup)
       templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
       overrideParameters: -assignmentName "windowsfirewallenabled"
 
