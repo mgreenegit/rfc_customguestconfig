@@ -22,7 +22,7 @@ variables:
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'LinuxInitiativeId'
-    value: ''
+    value: 'test'
 
 trigger:
   branches:
@@ -149,6 +149,8 @@ steps:
       Write-Output "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
       Write-Output "##vso[task.setvariable variable=WindowsInitiativeId;isOutput=true]$WindowsInitiativeId"
 
+      Write-Verbose $LinuxInitiativeId
+      Write-Verbose $WindowsInitiativeId
       Write-Verbose $(setvarStep.LinuxInitiativeId)
       Write-Verbose $(setvarStep.WindowsInitiativeId)
 
