@@ -17,6 +17,10 @@ variables:
     value: 'windowsfirewallenabled'
   - name: 'resourcegroup'
     value: 'rfc_customguestconfig'
+  - name: 'storageAccountName'
+    value: "guestconfiguration"
+  - name: 'storageContainerName'
+    value: 'artifacts'
   - name: 'LinuxInitiativeId'
     value: ''
   - name: 'WindowsInitiativeId'
@@ -107,6 +111,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
+      overrideParameters: -storageAccountName $(storageAccountName) -containerName $(storageContainerName)
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -118,14 +123,14 @@ steps:
     inline: |
 
       # Upload files
-      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
-      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $(storageContainerName) -File '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $(storageContainerName) -File '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
       # Get url with SAS token
       $StartTime = (Get-Date)
       $ExpiryTime = $StartTime.AddYears('3')
-      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'firewalldenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
-      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob 'firewalldenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
 
       # Overwrite definition/initiative files
       New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' -Platform Linux -Verbose
