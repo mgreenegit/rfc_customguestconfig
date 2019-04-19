@@ -131,7 +131,77 @@ steps:
       Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
       # Get url with SAS token
-      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name '$(linuxConfigName).zip' -Permission r -Force -Verbose
-      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name '$(windowsConfigName).zip' -Permission r -Force -Verbose
+      $StartTime = (Get-Date)
+      $ExpiryTime = $StartTime.AddYears('3')
+      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'firewalldenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+
+      # Overwrite definition/initiative files
+      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Firewalld is Enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Linux' -Platform Linux -Verbose
+      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Windows Firewall is Enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Windows' -Platform Windows -Verbose
+
+      # Publish definitions/initiatives
+      $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\' -Verbose
+      $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\' -Verbose
+
+      # Assign Windows policy
+      $windowsInitiative = Get-AzureRmPolicySetDefinition -Name $publishedWindowsPolicies.Name
+      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup)
+
+      $windowsAssignment = @{
+        Name = 'f93be1ec-e122-4a0e-9876-fef6487b9848'
+        DisplayName = 'Audit when Windows Firewall is not Enabled'
+        Description = 'Validates that the Windows host firewall package is enabled and that the default zone is public'
+        PolicySetDefinition = $windowsInitiative
+        Scope = $ResourceGroup.ResourceId
+        Location = 'eastus2'
+        AssignIdentity = $true
+      }
+      $windowsAssignment = New-AzureRmPolicyAssignment @windowsAssignment
+
+      # Hold for directory replication and then create role assignment for Windows policy assignment
+      Start-sleep 60
+      $deployDef = Get-AzureRmPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
+      $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
+      if ($roleDefinitionIds.Count -gt 0)
+      {
+          $roleDefinitionIds | ForEach-Object {
+              $roleDefId = $_.Split("/") | Select-Object -Last 1
+              $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+              If ($null -eq $roleAssignment) {
+                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+              }
+          }
+      }
+
+      # Assign Linux policy
+      $linuxInitiative = Get-AzureRmPolicySetDefinition -Name $publishedLinuxPolicies.Name
+      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup)
+
+      $linuxAssignment = @{
+        Name = '725e67e5-c735-4b97-aa65-7d805f8a169c'
+        DisplayName = 'Audit when Firewalld is not enabled'
+        Description = 'Validates that the Firewalld package is installed, running, and that the default zone is public'
+        PolicySetDefinition = $linuxInitiative
+        Scope = $ResourceGroup.ResourceId
+        Location = 'eastus2'
+        AssignIdentity = $true
+      }
+      $linuxAssignment = New-AzureRmPolicyAssignment @linuxAssignment
+
+      # Hold for directory replication and then create role assignment for Linux policy assignment
+      Start-sleep 60
+      $deployDef = Get-AzureRmPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
+      $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
+      if ($roleDefinitionIds.Count -gt 0)
+      {
+          $roleDefinitionIds | ForEach-Object {
+              $roleDefId = $_.Split("/") | Select-Object -Last 1
+              $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+              If ($null -eq $roleAssignment) {
+                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+              }
+          }
+      }
 
   displayName: 'Publish content to Azure storage'  
