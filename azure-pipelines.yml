@@ -21,6 +21,8 @@ variables:
     value: 'guestconfiguration'
   - name: 'storageContainerName'
     value: 'artifacts'
+  - name: 'LinuxInitiativeId'
+    value: ''
 
 trigger:
   branches:
@@ -147,6 +149,9 @@ steps:
       Write-Output "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
       Write-Output "##vso[task.setvariable variable=WindowsInitiativeId;isOutput=true]$WindowsInitiativeId"
 
+      Write-Verbose $(setvarStep.LinuxInitiativeId)
+      Write-Verbose $(setvarStep.WindowsInitiativeId)
+
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
 - task: AzureResourceGroupDeployment@2
@@ -155,9 +160,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $env:LinuxInitiativeId -resourceGroupName $(resourcegroup)
-      env:
-          "LinuxInitiativeId": $(setvarStep.LinuxInitiativeId)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(setvarStep.LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
