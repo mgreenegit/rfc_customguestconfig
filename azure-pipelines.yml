@@ -104,6 +104,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
+      location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
 
@@ -143,6 +144,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
+      location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
       overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourcegroup)
@@ -152,6 +154,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
+      location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.assignment.json'
       overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourcegroup)
@@ -161,6 +164,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
+      location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
       overrideParameters: -assignmentName "firewalldenabled"
@@ -170,6 +174,7 @@ steps:
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
+      location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
       overrideParameters: -assignmentName "windowsfirewallenabled"
