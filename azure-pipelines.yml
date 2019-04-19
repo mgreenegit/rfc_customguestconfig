@@ -145,7 +145,7 @@ steps:
       $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\' -Verbose
 
       # Assign Linux policy
-      $linuxInitiative = Get-AzPolicySetDefinition -Name $publishedLinuxPolicies.Name
+      $linuxInitiative = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
       $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
 
       $linuxAssignment = @{
@@ -175,7 +175,7 @@ steps:
         }
 
       # Assign Windows policy
-      $windowsInitiative = Get-AzPolicySetDefinition -Name $publishedWindowsPolicies.Name
+      $windowsInitiative = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
       $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
 
       $windowsAssignment = @{
