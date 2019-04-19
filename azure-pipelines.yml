@@ -122,6 +122,9 @@ steps:
     scriptType: 'inlineScript'
     inline: |
 
+      # Get Storage Context
+      $Context = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -Name $(storageAccountName) | ForEach-Object {$_.Context}
+
       # Upload files
       Set-AzStorageBlobContent -Context $Context -Container $(storageContainerName) -File '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
       Set-AzStorageBlobContent -Context $Context -Container $(storageContainerName) -File '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
