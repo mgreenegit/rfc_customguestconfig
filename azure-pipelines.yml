@@ -155,7 +155,9 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(setvarStep.LinuxInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $env:LinuxInitiativeId -resourceGroupName $(resourcegroup)
+      env:
+          "LinuxInitiativeId": $(setvarStep.LinuxInitiativeId)
 
   displayName: 'Deploy Policy assignment for Linux'
 
