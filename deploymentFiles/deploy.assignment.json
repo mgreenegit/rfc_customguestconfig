@@ -37,7 +37,7 @@
             "type": "SystemAssigned"
          },
          "properties": {
-            "displayName": "[parameters('assignmentDisplayName'))]",
+            "displayName": "[parameters('assignmentDisplayName')]",
             "policyDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/policySetDefinitions/', parameters('initiativeId'))]",
             "scope": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'))]"
          }
