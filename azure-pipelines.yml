@@ -128,8 +128,8 @@ steps:
       # Get url with SAS token
       $StartTime = (Get-Date)
       $ExpiryTime = $StartTime.AddYears('3')
-      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob 'firewalldenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
-      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob '$(linuxConfigName).zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
+      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob '$(windowsConfigName).zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
 
       # Overwrite definition/initiative files
       New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' -Platform Linux -Verbose
@@ -143,7 +143,7 @@ steps:
       $LinuxInitiativeId = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
       $WindowsInitiativeId = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
       
-      # Output values to build variables
+      # Output values to build variables for later tasks to consume as setvarStep.name
       Write-Output "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
       Write-Output "##vso[task.setvariable variable=WindowsInitiativeId;isOutput=true]$WindowsInitiativeId"
 
@@ -155,7 +155,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName 'firewalldenabled' -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId '$(setvarStep.LinuxInitiativeId)' -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(setvarStep.LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -164,8 +164,8 @@ steps:
       azureSubscription: 'ARM'
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
-      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.assignment.json'
-      overrideParameters: -assignmentName 'windowsfirewallenabled' -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId '$(setvarStep.WindowsInitiativeId)' -resourceGroupName $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
+      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(setvarStep.WindowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
@@ -174,8 +174,8 @@ steps:
       azureSubscription: 'ARM'
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
-      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
-      overrideParameters: -assignmentName 'firewalldenabled'
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
+      overrideParameters: -assignmentName $(linuxConfigName)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -184,8 +184,8 @@ steps:
       azureSubscription: 'ARM'
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
-      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
-      overrideParameters: -assignmentName 'windowsfirewallenabled'
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
+      overrideParameters: -assignmentName $(windowsConfigName)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
