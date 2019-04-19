@@ -41,6 +41,9 @@ steps:
     pwsh: 'false'
     script: |
       
+      # TEMP DEBUG
+      Get-ChildItem -Path $(Agent.BuildDirectory) -Verbose
+
       # Install required modules from PowerShell Gallery
       Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
       
