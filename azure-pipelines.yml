@@ -18,7 +18,7 @@ variables:
   - name: 'resourcegroup'
     value: 'rfc_customguestconfig'
   - name: 'storageAccountName'
-    value: "guestconfiguration"
+    value: 'guestconfiguration'
   - name: 'storageContainerName'
     value: 'artifacts'
 
@@ -155,7 +155,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId "$(LinuxInitiativeId)" -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName 'firewalldenabled' -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId '$(setvarStep.LinuxInitiativeId)' -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -165,7 +165,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.assignment.json'
-      overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId "$(WindowsInitiativeId)" -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName 'windowsfirewallenabled' -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId '$(setvarStep.WindowsInitiativeId)' -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
@@ -175,7 +175,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
-      overrideParameters: -assignmentName "firewalldenabled"
+      overrideParameters: -assignmentName 'firewalldenabled'
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -185,7 +185,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\/deploy.roleassignment.json'
-      overrideParameters: -assignmentName "windowsfirewallenabled"
+      overrideParameters: -assignmentName 'windowsfirewallenabled'
 
   displayName: 'Deploy Policy role assignment for Windows'
   
