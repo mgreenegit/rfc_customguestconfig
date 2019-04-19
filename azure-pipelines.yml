@@ -130,4 +130,8 @@ steps:
       Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
       Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
+      # Get url with SAS token
+      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name '$(linuxConfigName).zip' -Permission r -Force -Verbose
+      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name '$(windowsConfigName).zip' -Permission r -Force -Verbose
+
   displayName: 'Publish content to Azure storage'  
