@@ -37,15 +37,17 @@
             },
             "properties": {
                 "accessTier": "Cool"
-            }
-        },
-        {
-            "name": "[parameters('containerName')]",
-            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2019-04-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[parameters('storageAccountName')]"
+            },
+            "resources": [
+                {
+                    "name": "[parameters('containerName')]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-04-01",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                }
             ]
         }
     ]
