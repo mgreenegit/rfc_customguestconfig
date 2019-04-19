@@ -57,7 +57,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2017-04-01",
+            "apiVersion": "2019-02-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('virtualNetworkName')]",
             "location": "[resourceGroup().location]",
@@ -78,7 +78,7 @@
             }
         },
         {
-            "apiVersion": "2017-04-01",
+            "apiVersion": "2019-02-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('vm').windows.nicName]",
             "location": "[resourceGroup().location]",
@@ -100,7 +100,7 @@
             }
         },
         {
-            "apiVersion": "2017-04-01",
+            "apiVersion": "2019-02-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('vm').linux.nicName]",
             "location": "[resourceGroup().location]",
@@ -122,7 +122,7 @@
             }
         },
         {
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vm').linux.vmName]",
             "location": "[resourceGroup().location]",
@@ -167,7 +167,7 @@
             }
         },
         {
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vm').windows.vmName]",
             "location": "[resourceGroup().location]",
@@ -212,7 +212,7 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vm').linux.vmName, '/', variables('extension').linux.name)]",
             "location": "[resourceGroup().location]",
@@ -227,7 +227,7 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vm').windows.vmName, '/', variables('extension').windows.name)]",
             "location": "[resourceGroup().location]",
