@@ -18,9 +18,7 @@ variables:
   - name: 'resourcegroup'
     value: 'contosodev-rfc_customguestconfig'
   - name: 'LinuxInitiativeId'
-    value: '9ec11fb3-74ff-4901-af91-b3535886bb02'
   - name: 'WindowsInitiativeId'
-    value: 'f021d4ca-a153-4fc3-8c27-a997abe273cc'
 
 trigger:
   branches:
@@ -53,7 +51,7 @@ steps:
     script: |
       
       # Lint PowerShell scripts
-      Invoke-ScriptAnalyzer -Path '$(System.DefaultWorkingDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
+      Invoke-ScriptAnalyzer -Path '$(Agent.BuildDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
 
   displayName: 'Lint PowerShell scripts in Guest Configuration content'
 
@@ -66,12 +64,12 @@ steps:
       # Compile DSC MOF files
       
         # Linux configuration
-        . $(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
-        $(linuxConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux'
+        . $(Agent.BuildDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
+        $(linuxConfigName) -out '$(Agent.BuildDirectory)\guestConfiguration\Linux'
 
         # Windows configuration
-        . $(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
-        $(windowsConfigName) -out '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows'
+        . $(Agent.BuildDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
+        $(windowsConfigName) -out '$(Agent.BuildDirectory)\guestConfiguration\Windows'
       
   displayName: 'Compile DSC MOF files'
 
@@ -82,30 +80,22 @@ steps:
     script: |
 
       # Create artifacts folder
-      New-Item -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Type Directory
+      New-Item -Path '$(Agent.BuildDirectory)\artifacts\' -Type Directory
       
       # Create artifacts
       
         # New guest configuration package for Linux
         New-GuestConfigurationPackage -Name '$(linuxConfigName)' `
-        -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
-        -FilesToInclude '$(System.DefaultWorkingDirectory)\guestConfiguration\Linux\InSpecProfiles' `
-        -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
+        -Configuration '$(Agent.BuildDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
+        -FilesToInclude '$(Agent.BuildDirectory)\guestConfiguration\Linux\InSpecProfiles' `
+        -DestinationPath '$(Agent.BuildDirectory)\artifacts\' `
         -Verbose
 
         # New guest configuration package for Windows
         New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
-        -Configuration '$(System.DefaultWorkingDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
-        -DestinationPath '$(System.DefaultWorkingDirectory)\artifacts\' `
+        -Configuration '$(Agent.BuildDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
+        -DestinationPath '$(Agent.BuildDirectory)\artifacts\' `
         -Verbose
-
-      # Confirm output
-      Write-Verbose 'Validate artifacts folder:'
-      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\' -Verbose
-      Write-Verbose 'Validate Linux artifact'
-      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Verbose
-      Write-Verbose 'Validate Windows artifact'
-      Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Verbose
   
   displayName: 'Create content artifacts'
 
@@ -113,7 +103,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       resourceGroupName: $(resourcegroup)
-      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.storagecontainer.json'
+      csmFile: '$(Agent.BuildDirectory)\deploymentFiles\deploy.storagecontainer.json'
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -125,8 +115,8 @@ steps:
     inline: |
 
       # Upload files
-      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
-      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(Agent.BuildDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
+      Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(Agent.BuildDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Blob '$(windowsConfigName).zip' -Force -Verbose
 
       # Get url with SAS token
       $StartTime = (Get-Date)
@@ -135,34 +125,24 @@ steps:
       $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
 
       # Overwrite definition/initiative files
-      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Linux' -Platform Linux -Verbose
-      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Audit when Windows Firewall is not enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Windows' -Platform Windows -Verbose
-
-      # Update Linux policy InitiativeID so it can be passed consistently to assignment
-      $linuxInitiative = Get-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\Initiative.json' | ConvertFrom-JSON
-      $generatedLinuxInitiativeId = $linuxInitiative.Name
-      $linuxInitiative.Name = $(LinuxInitiativeId)
-      $linuxInitiative.Id = $linuxInitiative.Id -replace $generatedInitiativeId, $(LinuxInitiativeId)
-      $linuxInitiative | ConvertFrom-JSON | Set-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\Initiative.json'
-
-      # Update Windows policy InitiativeID so it can be passed consistently to assignment
-      $windowsInitiative = Get-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\Initiative.json' | ConvertFrom-JSON
-      $generatedWindowsInitiativeId = $windowsInitiative.Name
-      $windowsInitiative.Name = $(WindowsInitiativeId)
-      $windowsInitiative.Id = $windowsInitiative.Id -replace $generatedInitiativeId, $(WindowsInitiativeId)
-      $windowsInitiative | ConvertFrom-JSON | Set-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\Initiative.json'
-
+      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Agent.BuildDirectory)\policyFiles\Linux' -Platform Linux -Verbose
+      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Audit when Windows Firewall is not enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Agent.BuildDirectory)\policyFiles\Windows' -Platform Windows -Verbose
+      
       # Publish definitions/initiatives
-      $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\' -Verbose
-      $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\' -Verbose
+      $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(Agent.BuildDirectory)\policyFiles\Linux\' -Verbose
+      $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(Agent.BuildDirectory)\policyFiles\Windows\' -Verbose
 
+      # Update InitiativeID so it can be passed to assignment
+      $(LinuxInitiativeId) = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
+      $(WindowsInitiativeId) = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
+      
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
       resourceGroupName: $(resourcegroup)
-      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
+      csmFile: '$(Agent.BuildDirectory)\deploymentFiles\deploy.assignment.json'
       overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
@@ -171,7 +151,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       resourceGroupName: $(resourcegroup)
-      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
+      csmFile: '$(Agent.BuildDirectory)\deploymentFiles\/deploy.assignment.json'
       overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
@@ -180,7 +160,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       resourceGroupName: $(resourcegroup)
-      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
+      csmFile: '$(Agent.BuildDirectory)\deploymentFiles\/deploy.roleassignment.json'
       overrideParameters: -assignmentName "firewalldenabled"
 
   displayName: 'Deploy Policy role assignment for Linux'
@@ -189,7 +169,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       resourceGroupName: $(resourcegroup)
-      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
+      csmFile: '$(Agent.BuildDirectory)\deploymentFiles\/deploy.roleassignment.json'
       overrideParameters: -assignmentName "windowsfirewallenabled"
 
   displayName: 'Deploy Policy role assignment for Windows'
