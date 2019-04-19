@@ -18,7 +18,9 @@ variables:
   - name: 'resourcegroup'
     value: 'contosodev-rfc_customguestconfig'
   - name: 'LinuxInitiativeId'
+    value: ''
   - name: 'WindowsInitiativeId'
+    value: ''
 
 trigger:
   branches:
