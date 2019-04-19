@@ -144,39 +144,9 @@ steps:
       $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\' -Verbose
       $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\' -Verbose
 
-      # Assign Windows policy
-      $windowsInitiative = Get-AzureRmPolicySetDefinition -Name $publishedWindowsPolicies.Name
-      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup)
-
-      $windowsAssignment = @{
-        Name = 'f93be1ec-e122-4a0e-9876-fef6487b9848'
-        DisplayName = 'Audit when Windows Firewall is not Enabled'
-        Description = 'Validates that the Windows host firewall package is enabled and that the default zone is public'
-        PolicySetDefinition = $windowsInitiative
-        Scope = $ResourceGroup.ResourceId
-        Location = 'eastus2'
-        AssignIdentity = $true
-      }
-      $windowsAssignment = New-AzureRmPolicyAssignment @windowsAssignment
-
-      # Hold for directory replication and then create role assignment for Windows policy assignment
-      Start-sleep 60
-      $deployDef = Get-AzureRmPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
-      $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
-      if ($roleDefinitionIds.Count -gt 0)
-      {
-          $roleDefinitionIds | ForEach-Object {
-              $roleDefId = $_.Split("/") | Select-Object -Last 1
-              $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              If ($null -eq $roleAssignment) {
-                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              }
-          }
-      }
-
       # Assign Linux policy
-      $linuxInitiative = Get-AzureRmPolicySetDefinition -Name $publishedLinuxPolicies.Name
-      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup)
+      $linuxInitiative = Get-AzPolicySetDefinition -Name $publishedLinuxPolicies.Name
+      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
 
       $linuxAssignment = @{
         Name = '725e67e5-c735-4b97-aa65-7d805f8a169c'
@@ -187,21 +157,51 @@ steps:
         Location = 'eastus2'
         AssignIdentity = $true
       }
-      $linuxAssignment = New-AzureRmPolicyAssignment @linuxAssignment
+      $linuxAssignment = New-AzPolicyAssignment @linuxAssignment
 
-      # Hold for directory replication and then create role assignment for Linux policy assignment
-      Start-sleep 60
-      $deployDef = Get-AzureRmPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
-      $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
-      if ($roleDefinitionIds.Count -gt 0)
-      {
-          $roleDefinitionIds | ForEach-Object {
-              $roleDefId = $_.Split("/") | Select-Object -Last 1
-              $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              If ($null -eq $roleAssignment) {
-                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              }
-          }
+        # Hold for directory replication and then create role assignment for Linux policy assignment
+        Start-sleep 60
+        $deployDef = Get-AzPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
+        $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
+        if ($roleDefinitionIds.Count -gt 0)
+        {
+            $roleDefinitionIds | ForEach-Object {
+                $roleDefId = $_.Split("/") | Select-Object -Last 1
+                $roleAssignment = Get-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+                If ($null -eq $roleAssignment) {
+                  New-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
+      # Assign Windows policy
+      $windowsInitiative = Get-AzPolicySetDefinition -Name $publishedWindowsPolicies.Name
+      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
+
+      $windowsAssignment = @{
+        Name = 'f93be1ec-e122-4a0e-9876-fef6487b9848'
+        DisplayName = 'Audit when Windows Firewall is not Enabled'
+        Description = 'Validates that the Windows host firewall package is enabled and that the default zone is public'
+        PolicySetDefinition = $windowsInitiative
+        Scope = $ResourceGroup.ResourceId
+        Location = 'eastus2'
+        AssignIdentity = $true
       }
+      $windowsAssignment = New-AzPolicyAssignment @windowsAssignment
 
-  displayName: 'Publish content to Azure storage'  
+        # Hold for directory replication and then create role assignment for Windows policy assignment
+        Start-sleep 60
+        $deployDef = Get-AzPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
+        $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
+        if ($roleDefinitionIds.Count -gt 0)
+        {
+            $roleDefinitionIds | ForEach-Object {
+                $roleDefId = $_.Split("/") | Select-Object -Last 1
+                $roleAssignment = Get-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+                If ($null -eq $roleAssignment) {
+                  New-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
+  displayName: 'Publish content to Azure'  
