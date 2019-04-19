@@ -144,8 +144,8 @@ steps:
       $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(Build.SourcesDirectory)\policyFiles\Windows\' -Verbose
 
       # Update InitiativeID so it can be passed to assignment
-      $(LinuxInitiativeId) = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
-      $(WindowsInitiativeId) = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
+      $env:LinuxInitiativeId = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
+      $env:WindowsInitiativeId = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
       
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
