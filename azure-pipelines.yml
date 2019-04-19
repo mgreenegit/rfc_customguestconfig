@@ -17,6 +17,10 @@ variables:
     value: 'windowsfirewallenabled'
   - name: 'resourcegroup'
     value: 'contosodev-rfc_customguestconfig'
+  - name: 'LinuxInitiativeId'
+    value: '9ec11fb3-74ff-4901-af91-b3535886bb02'
+  - name: 'WindowsInitiativeId'
+    value: 'f021d4ca-a153-4fc3-8c27-a997abe273cc'
 
 trigger:
   branches:
@@ -103,8 +107,15 @@ steps:
       Write-Verbose 'Validate Windows artifact'
       Test-Path -Path '$(System.DefaultWorkingDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' -Verbose
   
-  continueOnError: 'true'
   displayName: 'Create content artifacts'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      resourceGroupName: $(resourceroup)
+      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.storagecontainer.json'
+
+  displayName: 'Create/validate Azure storage account and container'
 
 - task: AzurePowerShell@4
   inputs:
@@ -112,19 +123,6 @@ steps:
     azurePowerShellVersion: 'latestVersion'
     scriptType: 'inlineScript'
     inline: |
-      
-      # Verify resource group exists
-      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
-      if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzResourceGroup -Name $(resourcegroup) -Location 'eastus2' -Verbose}
-
-      # Verify storage account exists
-      $StorageAccount = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -ErrorAction SilentlyContinue
-      if ($null -eq $StorageAccount) {$StorageAccount = New-AzStorageAccount -ResourceGroupName $(resourcegroup) -AccountName 'guestconfiguration' -Location eastus -SkuName Standard_GRS -Verbose}
-      $Context = $StorageAccount.Context
-
-      # Verify storage container exists
-      $Container = $StorageAccount | Get-AzStorageContainer -Name 'artifacts' -ErrorAction SilentlyContinue
-      if ($null -eq $Container) {$Container = New-AzStorageContainer -Name 'artifacts' -Context $Context -Permission Off -Verbose}
 
       # Upload files
       Set-AzStorageBlobContent -Context $Context -Container $Container.Name -File '$(System.DefaultWorkingDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' -Blob '$(linuxConfigName).zip' -Force -Verbose
@@ -137,71 +135,62 @@ steps:
       $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $Container.Name -Blob 'windowsfirewallenabled.zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
 
       # Overwrite definition/initiative files
-      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Firewalld is Enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Linux' -Platform Linux -Verbose
-      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Windows Firewall is Enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Windows' -Platform Windows -Verbose
+      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Linux' -Platform Linux -Verbose
+      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Audit when Windows Firewall is not enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(System.DefaultWorkingDirectory)\policyFiles\Windows' -Platform Windows -Verbose
+
+      # Update Linux policy InitiativeID so it can be passed consistently to assignment
+      $linuxInitiative = Get-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\Initiative.json' | ConvertFrom-JSON
+      $generatedLinuxInitiativeId = $linuxInitiative.Name
+      $linuxInitiative.Name = $(LinuxInitiativeId)
+      $linuxInitiative.Id = $linuxInitiative.Id -replace $generatedInitiativeId, $(LinuxInitiativeId)
+      $linuxInitiative | ConvertFrom-JSON | Set-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\Initiative.json'
+
+      # Update Windows policy InitiativeID so it can be passed consistently to assignment
+      $windowsInitiative = Get-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\Initiative.json' | ConvertFrom-JSON
+      $generatedWindowsInitiativeId = $windowsInitiative.Name
+      $windowsInitiative.Name = $(WindowsInitiativeId)
+      $windowsInitiative.Id = $windowsInitiative.Id -replace $generatedInitiativeId, $(WindowsInitiativeId)
+      $windowsInitiative | ConvertFrom-JSON | Set-Content -path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\Initiative.json'
 
       # Publish definitions/initiatives
       $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Linux\' -Verbose
       $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(System.DefaultWorkingDirectory)\policyFiles\Windows\' -Verbose
 
-      # Assign Linux policy
-      $linuxInitiative = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
-      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
+  displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
-      $linuxAssignment = @{
-        Name = '725e67e5-c735-4b97-aa65-7d805f8a169c'
-        DisplayName = 'Audit when Firewalld is not enabled'
-        Description = 'Validates that the Firewalld package is installed, running, and that the default zone is public'
-        PolicySetDefinition = $linuxInitiative
-        Scope = $ResourceGroup.ResourceId
-        Location = 'eastus2'
-        AssignIdentity = $true
-      }
-      $linuxAssignment = New-AzPolicyAssignment @linuxAssignment
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      resourceGroupName: $(resourceroup)
+      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
+      overrideParameters: -assignmentName "firewalldenabled" -assignmentDisplayName "Audit when Firewalld is not enabled" -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourceroup)
 
-        # Hold for directory replication and then create role assignment for Linux policy assignment
-        Start-sleep 60
-        $deployDef = Get-AzPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
-        $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
-        if ($roleDefinitionIds.Count -gt 0)
-        {
-            $roleDefinitionIds | ForEach-Object {
-                $roleDefId = $_.Split("/") | Select-Object -Last 1
-                $roleAssignment = Get-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-                If ($null -eq $roleAssignment) {
-                  New-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $linuxAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-                }
-            }
-        }
+  displayName: 'Deploy Policy assignment for Linux'
 
-      # Assign Windows policy
-      $windowsInitiative = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
-      $ResourceGroup = Get-AzResourceGroup -Name $(resourcegroup)
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      resourceGroupName: $(resourceroup)
+      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.assignment.json'
+      overrideParameters: -assignmentName "windowsfirewallenabled" -assignmentDisplayName "Audit when Windows Firewall is not enabled" -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourceroup)
 
-      $windowsAssignment = @{
-        Name = 'f93be1ec-e122-4a0e-9876-fef6487b9848'
-        DisplayName = 'Audit when Windows Firewall is not Enabled'
-        Description = 'Validates that the Windows host firewall package is enabled and that the default zone is public'
-        PolicySetDefinition = $windowsInitiative
-        Scope = $ResourceGroup.ResourceId
-        Location = 'eastus2'
-        AssignIdentity = $true
-      }
-      $windowsAssignment = New-AzPolicyAssignment @windowsAssignment
+  displayName: 'Deploy Policy assignment for Windows'
 
-        # Hold for directory replication and then create role assignment for Windows policy assignment
-        Start-sleep 60
-        $deployDef = Get-AzPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
-        $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
-        if ($roleDefinitionIds.Count -gt 0)
-        {
-            $roleDefinitionIds | ForEach-Object {
-                $roleDefId = $_.Split("/") | Select-Object -Last 1
-                $roleAssignment = Get-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-                If ($null -eq $roleAssignment) {
-                  New-AzRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $windowsAssignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-                }
-            }
-        }
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      resourceGroupName: $(resourceroup)
+      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
+      overrideParameters: -assignmentName "firewalldenabled"
 
-  displayName: 'Publish content to Azure'  
+  displayName: 'Deploy Policy role assignment for Linux'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      resourceGroupName: $(resourceroup)
+      templateLocation: 'https://raw.githubusercontent.com/Microsoft/rfc_customguestconfig/dev/rfc_customguestconfig/deploy.roleassignment.json'
+      overrideParameters: -assignmentName "windowsfirewallenabled"
+
+  displayName: 'Deploy Policy role assignment for Windows'
+  
