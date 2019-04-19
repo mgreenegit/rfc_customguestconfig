@@ -16,7 +16,7 @@ variables:
   - name: 'windowsConfigName'
     value: 'windowsfirewallenabled'
   - name: 'resourcegroup'
-    value: 'contosodev-rfc_customguestconfig'
+    value: 'rfc_customguestconfig'
   - name: 'LinuxInitiativeId'
     value: ''
   - name: 'WindowsInitiativeId'
@@ -40,7 +40,7 @@ steps:
     targetType: inline
     pwsh: 'false'
     script: |
-    
+
       # Install required modules from PowerShell Gallery
       Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
       
