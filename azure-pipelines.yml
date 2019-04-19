@@ -142,8 +142,8 @@ steps:
       $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(Build.SourcesDirectory)\policyFiles\Windows\' -Verbose
 
       # Update InitiativeID so it can be passed to assignment
-      $LinuxInitiativeId = Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
-      $WindowsInitiativeId = Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions').Name
+      $LinuxInitiativeId = (Get-AzPolicySetDefinition -Name $($publishedLinuxPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions')).Name
+      $WindowsInitiativeId = (Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions')).Name
       
       # Output values to build variables for later tasks to consume as setvarStep.name
       Write-Host "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
@@ -153,6 +153,8 @@ steps:
       Write-Host "The Windows Id is $WindowsInitiativeId"
       Write-Host $(setvarStep.LinuxInitiativeId)
       Write-Host $(setvarStep.WindowsInitiativeId)
+      Write-Host $($env:LinuxInitiativeId)
+      Write-Host $($env:WindowsInitiativeId)
 
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
