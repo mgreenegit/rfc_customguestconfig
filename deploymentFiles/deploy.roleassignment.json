@@ -7,6 +7,12 @@
       "metadata": {
         "description": "The Name of the policy assignment for the role assignment to be associated with."
       }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource group to use as the assignment scope.  This template does not handle subscription level assignments."
+      }
     }
   },
   "resources": [
