@@ -151,8 +151,6 @@ steps:
 
       Write-Host "The Linux Id is $LinuxInitiativeId"
       Write-Host "The Windows Id is $WindowsInitiativeId"
-      Write-Host $(setvarStep.LinuxInitiativeId)
-      Write-Host $(setvarStep.WindowsInitiativeId)
       Write-Host $($env:LinuxInitiativeId)
       Write-Host $($env:WindowsInitiativeId)
 
