@@ -148,8 +148,8 @@ steps:
       $WindowsInitiativeId = (Get-AzPolicySetDefinition -Name $($publishedWindowsPolicies | ? ResourceType -eq 'Microsoft.Authorization/policySetDefinitions' | % Name)).Name
       
       # Output values to build variables for later tasks to consume as setvarStep.name
-      Write-Host "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
-      Write-Host "##vso[task.setvariable variable=WindowsInitiativeId;isOutput=true]$WindowsInitiativeId"
+      Write-Host "##vso[task.setvariable variable=LinuxInitiativeId]$LinuxInitiativeId"
+      Write-Host "##vso[task.setvariable variable=WindowsInitiativeId]$WindowsInitiativeId"
 
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
