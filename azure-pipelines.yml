@@ -159,7 +159,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId "$env:LinuxInitiativeId" -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -169,7 +169,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId "$env:WindowsInitiativeId" -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
