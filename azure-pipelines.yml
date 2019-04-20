@@ -21,10 +21,6 @@ variables:
     value: 'guestconfiguration'
   - name: 'storageContainerName'
     value: 'artifacts'
-  - name: 'LinuxInitiativeId'
-    value: ''
-  - name: 'WindowsInitiativeId'
-    value: ''
 
 trigger:
   branches:
