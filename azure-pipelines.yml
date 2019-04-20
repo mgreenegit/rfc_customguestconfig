@@ -22,7 +22,9 @@ variables:
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'LinuxInitiativeId'
-    value: 'test'
+    value: ''
+  - name: 'WindowsInitiativeId'
+    value: ''
 
 trigger:
   branches:
@@ -149,11 +151,6 @@ steps:
       Write-Host "##vso[task.setvariable variable=LinuxInitiativeId;isOutput=true]$LinuxInitiativeId"
       Write-Host "##vso[task.setvariable variable=WindowsInitiativeId;isOutput=true]$WindowsInitiativeId"
 
-      Write-Host "The Linux Id is $LinuxInitiativeId"
-      Write-Host "The Windows Id is $WindowsInitiativeId"
-      Write-Host $($env:LinuxInitiativeId)
-      Write-Host $($env:WindowsInitiativeId)
-
   displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
 
 - task: AzureResourceGroupDeployment@2
@@ -162,7 +159,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(setvarStep.LinuxInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $($env:LinuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -172,7 +169,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(setvarStep.WindowsInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $($env:WindowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
