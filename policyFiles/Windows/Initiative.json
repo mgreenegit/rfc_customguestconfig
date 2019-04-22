@@ -1,0 +1,22 @@
+{
+    "properties": {
+        "displayName": "[Initiative] Windows Firewall is Enabled",
+        "policyType": "Custom",
+        "description": "Validates that the Windows host firewall package is enabled and that the default zone is public",
+        "metadata": {
+            "category": "Guest Configuration"
+        },
+        "policyDefinitions": [
+            {
+                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/c1e5f244-4d6e-4c7d-aad3-256b4870f671",
+                "policyDefinitionReferenceId": "Deploy_windowsfirewallenabled"
+            },
+            {
+                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1aa05750-cd97-4fd5-a828-2be0939a564c",
+                "policyDefinitionReferenceId": "Audit_windowsfirewallenabled"
+            }
+        ]
+    },
+    "id": "/providers/Microsoft.Authorization/policySetDefinitions/6667644b-a5ff-4e5f-bb06-2e671efc2870",
+    "name": "6667644b-a5ff-4e5f-bb06-2e671efc2870"
+}

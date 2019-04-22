@@ -1,0 +1,246 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the Virtual Machine."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            }
+        }
+    },
+    "variables": {
+        "vm": {
+            "windows": {
+                "ImagePublisher": "MicrosoftWindowsServer",
+                "ImageOffer": "WindowsServer",
+                "ImageSKU": "2019-Datacenter-Core",
+                "osDiskName": "windows-osdisk",
+                "nicName": "windows-nic",
+                "vmName": "windows"
+            },
+            "linux": {
+                "ImagePublisher": "RedHat",
+                "ImageOffer": "RHEL",
+                "ImageSKU": "7.5",
+                "osDiskName": "linux-osdisk",
+                "nicName": "linux-nic",
+                "vmName": "linux"
+            }
+        },
+        "diskType": "Standard_LRS",
+        "vmSize": "Standard_DS3_V2",
+        "ipConfigName": "ipConfig",
+        "addressPrefix": "10.0.0.0/24",
+        "subnetName": "subnet0",
+        "subnetPrefix": "10.0.0.0/24",
+        "virtualNetworkName": "vnet0",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+        "extension": {
+            "windows": {
+                "name": "AzurePolicyforWindows",
+                "type": "ConfigurationforWindows",
+                "version": "1.0"
+            },
+            "linux": {
+                "name": "AzurePolicyforLinux",
+                "type": "ConfigurationforLinux",
+                "version": "1.0"
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vm').windows.nicName]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[variables('ipConfigName')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vm').linux.nicName]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[variables('ipConfigName')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-03-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm').linux.vmName]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('vm').linux.nicName)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vm').linux.vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vm').linux.ImagePublisher]",
+                        "offer": "[variables('vm').linux.ImageOffer]",
+                        "sku": "[variables('vm').linux.ImageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[variables('vm').linux.osDiskName]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('diskType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vm').linux.nicName)]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-03-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm').windows.vmName]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('vm').windows.nicName)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vm').windows.vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vm').windows.ImagePublisher]",
+                        "offer": "[variables('vm').windows.ImageOffer]",
+                        "sku": "[variables('vm').windows.ImageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[variables('vm').windows.osDiskName]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('diskType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vm').windows.nicName)]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-03-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vm').linux.vmName, '/', variables('extension').linux.name)]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/',variables('vm').linux.vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.GuestConfiguration",
+                "type": "[variables('extension').linux.type]",
+                "typeHandlerVersion": "[variables('extension').linux.version]",
+                "autoUpgradeMinorVersion": true
+            }
+        },
+        {
+            "apiVersion": "2019-03-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vm').windows.vmName, '/', variables('extension').windows.name)]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/',variables('vm').windows.vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.GuestConfiguration",
+                "type": "[variables('extension').windows.type]",
+                "typeHandlerVersion": "[variables('extension').windows.version]",
+                "autoUpgradeMinorVersion": true
+            }
+        }
+    ],
+    "outputs": {}
+}

@@ -1,18 +1,30 @@
-pool: 'Hosted VS2017'
+pool: 
+  vmImage: 'windows-2019'
 
 pr: none
 
 variables:
-- group: vmusers
-- name: 'major'
-  value: '1'
-- name: 'minor'
-  value: '2'
-- name: 'configname'
-  value: 'windowsfirewallenabled'
-- name: 'resourcegroup'
-  value: 'contosodev-rfc_customguestconfig'
-
+  - group: vmusers
+  - name: 'major'
+    value: '1'
+  - name: 'minor'
+    value: '2'
+  - name: 'requiredModules'
+    value: 'GuestConfiguration' 
+  - name: 'resourcegroup'
+    value: 'rfc_customguestconfig'
+  - name: 'storageAccountName'
+    value: 'guestconfiguration'
+  - name: 'storageContainerName'
+    value: 'artifacts'
+  - name: 'linuxConfigName'
+    value: 'firewalldenabled'
+  - name: 'linuxAssignmentName'
+    value: '72cf8be5-ca7e-425b-a37b-d6340a3f1635'
+  - name: 'windowsConfigName'
+    value: 'windowsfirewallenabled'
+  - name: 'windowsAssignmentName'
+    value: '2067efd3-5978-4372-b7ba-c7b2060dd889'
 
 trigger:
   branches:
@@ -27,148 +39,261 @@ trigger:
     - .github/*
 
 steps:
-- powershell: |
-    # Install Guest Config module from PowerShell Gallery
-    Install-Module -Name 'GuestConfiguration' -Repository 'PSGallery' -Scope 'CurrentUser' -Force
-    # Save required module for Firewall configuration script to perform audits
-    New-Item -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\' -Type Directory
-    Save-Module -Name 'NetworkingDsc' -Path '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\'
-    # Create content package
-    New-Item -Path '$(System.DefaultWorkingDirectory)\package\' -Type Directory
-    New-GuestConfigurationPackage -Name '$(configname)' `
-    -Configuration '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\$(configname).localhost.mof' `
-    -FilesToInclude '$(System.DefaultWorkingDirectory)\customPolicyFiles\guestConfiguration\requirements\' `
-    -DestinationPath '$(System.DefaultWorkingDirectory)' `
-    -Verbose
-  displayName: 'Create custom configuration package'
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+
+      # Install required modules from PowerShell Gallery
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer `
+        -Repository 'PSGallery' `
+        -Scope 'CurrentUser' `
+        -Verbose `
+        -Force
+      
+  displayName: 'Setup/validate Windows PowerShell environment'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+      
+      # Lint PowerShell scripts
+      Invoke-ScriptAnalyzer -Path '$(Build.SourcesDirectory)\guestConfiguration\' `
+        -IncludeDefaultRules `
+        -Recurse `
+        -Severity Error `
+        -ReportSummary `
+        -EnableExit
+
+  displayName: 'Lint PowerShell scripts in Guest Configuration content'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+
+      # Compile DSC MOF files
+      
+        # Linux configuration
+        . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
+        $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'
+
+        # Windows configuration
+        . $(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
+        $(windowsConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Windows'
+      
+  displayName: 'Compile DSC MOF files'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+
+      # Create artifacts folder
+      New-Item -Path '$(Build.SourcesDirectory)\artifacts\' -Type Directory
+      
+      # Create artifacts
+      
+        # New guest configuration package for Linux
+        New-GuestConfigurationPackage -Name '$(linuxConfigName)' `
+        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
+        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Linux\InSpecProfiles' `
+        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
+        -Verbose
+
+        # New guest configuration package for Windows
+        New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
+        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
+        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
+        -Verbose
+  
+  displayName: 'Create content artifacts'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
+      overrideParameters: -storageAccountName $(storageAccountName) -containerName $(storageContainerName)
+
+  displayName: 'Create/validate Azure storage account and container'
+
+- task: AzurePowerShell@4
+  inputs:
+    azureSubscription: 'ARM'
+    azurePowerShellVersion: 'latestVersion'
+    scriptType: 'inlineScript'
+    inline: |
+
+      # Get Storage Context
+      $Context = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) `
+        -Name $(storageAccountName) | `
+        ForEach-Object {$_.Context}
+
+      # Upload files
+      Set-AzStorageBlobContent -Context $Context `
+        -Container $(storageContainerName) `
+        -File '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip' `
+        -Blob '$(linuxConfigName).zip' `
+        -Force `
+        -Verbose
+      Set-AzStorageBlobContent -Context $Context `
+        -Container $(storageContainerName) `
+        -File '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip' `
+        -Blob '$(windowsConfigName).zip' `
+        -Force `
+        -Verbose
+
+      # Get url with SAS token
+      $StartTime = (Get-Date)
+      $ExpiryTime = $StartTime.AddYears('3')
+      $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context `
+        -Container $(storageContainerName) `
+        -Blob '$(linuxConfigName).zip' `
+        -StartTime $StartTime `
+        -ExpiryTime $ExpiryTime `
+        -Permission rl `
+        -FullUri `
+        -Verbose
+      $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context `
+        -Container $(storageContainerName) `
+        -Blob '$(windowsConfigName).zip' `
+        -StartTime $StartTime `
+        -ExpiryTime $ExpiryTime `
+        -Permission rl `
+        -FullUri `
+        -Verbose
+
+      # Build Policy parameter tables
+      $linuxPolicyParameterInfo = @(
+        @{
+            Name = 'DefaultFirewalldProfile'                                                                        # Policy parameter name (mandatory)
+            DisplayName = 'Default Firewalld Profile.'                                                              # Policy parameter display name (mandatory)
+            Description = "Choose the default profile for Firewalld."                                               # Policy parameter description (optional)
+            ResourceType = "ChefInSpecResource"                                                                     # dsc configuration resource type (mandatory)
+            ResourceId = 'FirewalldEnabled'                                                                         # dsc configuration resource property name (mandatory)
+            ResourcePropertyName = "AttributesYmlContent"                                                           # dsc configuration resource name; do not include any backslashes (mandatory)
+            DefaultValue = 'public'                                                                                 # Policy parameter default value (optional)
+            AllowedValues = @('drop','block','public','external','dmz','work','home','internal','trusted')          # Policy parameter allowed values (optional)
+        }
+      )
+      $windowsPolicyParameterInfo = @(
+        @{
+            Name = 'EnablePublicProfile'                                                                            # Policy parameter name (mandatory)
+            DisplayName = 'Enable Public profile'                                                                   # Policy parameter display name (mandatory)
+            Description = "Enables Windows Firewall for Public profile. (0 to Disable, 1 to Enable)"                # Policy parameter description (optional)
+            ResourceType = "Registry"                                                                               # dsc configuration resource type (mandatory)
+            ResourceId = 'EnableFirewall'                                                                           # dsc configuration resource name; do not include any backslashes (mandatory)
+            ResourcePropertyName = "ValueData"                                                                      # dsc configuration resource property name (mandatory)
+            DefaultValue = '1'                                                                                      # Policy parameter default value (optional)
+            AllowedValues = @('0','1')                                                                              # Policy parameter allowed values (optional)
+        }
+      )
+      
+      # Overwrite definition/initiative files
+      New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS `
+        -DisplayName 'Audit when Firewalld is not enabled' `
+        -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' `
+        -Version 1.0.0.0 `
+        -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' `
+        -Platform Linux `
+        -Parameter $linuxPolicyParameterInfo `
+        -Verbose
+      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS `
+        -DisplayName 'Audit when Windows Firewall is not enabled' `
+        -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' `
+        -Version 1.0.0.0 `
+        -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Windows' `
+        -Platform Windows `
+        -Parameter $windowsPolicyParameterInfo `
+        -Verbose
+      
+      # Publish definitions/initiatives
+      $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(Build.SourcesDirectory)\policyFiles\Linux\' -Verbose
+      $publishedWindowsPolicies = Publish-GuestConfigurationPolicy -Path '$(Build.SourcesDirectory)\policyFiles\Windows\' -Verbose
+
+      # Update InitiativeID so it can be passed to assignment
+      $linuxAssignmentName = $publishedLinuxPolicies | `
+        Where-Object {$_.ResourceType -eq 'Microsoft.Authorization/policySetDefinitions'} | `
+        ForEach-Object {$_.Name}
+      $linuxInitiativeId = Get-AzPolicySetDefinition -Name $linuxAssignmentName | ForEach-Object {$_.Name}
+      $windowsAssignmentName = $publishedWindowsPolicies | `
+        Where-Object {$_.ResourceType -eq 'Microsoft.Authorization/policySetDefinitions'} | `
+        ForEach-Object {$_.Name}
+      $windowsInitiativeId = Get-AzPolicySetDefinition -Name $windowsAssignmentName | ForEach-Object {$_.Name}
+      
+      # Output values to build variables for later tasks to consume as setvarStep.name
+      Write-Host "##vso[task.setvariable variable=linuxInitiativeId]$linuxInitiativeId"
+      Write-Host "##vso[task.setvariable variable=windowsInitiativeId]$windowsInitiativeId"
+
+  displayName: 'Upload artifacts, get SAS tokens and publish definitions/initiatives'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
+      overrideParameters: -assignmentName $(linuxAssignmentName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)
+
+  displayName: 'Deploy Policy assignment for Linux'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
+      overrideParameters: -assignmentName $(windowsAssignmentName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)
+
+  displayName: 'Deploy Policy assignment for Windows'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+
+      Start-sleep -seconds 30
+      
+  displayName: 'Allow time for the Assignment to be replicated across geographies'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
+      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
+
+  displayName: 'Deploy Policy role assignment for Linux'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
+      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName $(resourcegroup)
+
+  displayName: 'Deploy Policy role assignment for Windows'
+  
+- task: PublishPipelineArtifact@0
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip'
+    artifactName: '$(linuxConfigName)'
+  
+    displayName: 'Publish Linux package artifact to trigger CI integration tests'
 
 - task: PublishPipelineArtifact@0
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip'
-    artifactName: '$(configname)'
-  displayName: 'Publish package artifact'
-
-- powershell: |
-    # Artifact Uri
-    # https://contosodev.blob.core.windows.net/shared/windowsfirewallenabled.zip
-    #'https://dev.azure.com/azvmguestpolicy/8cf7364a-2490-4dd7-8353-5c7e17e8728d/_apis/build/builds/242/artifacts?artifactName=$(configname)&fileId=CE16C4766ECA30B8346A1AD07E03AA8ACE52B1970D81EC22AC53F946107BAA6402&fileName=$(configname).zip&api-version=5.0-preview.3'
-
-    $artifact = 'https://contosodev.blob.core.windows.net/shared/windowsfirewallenabled.zip'
-    # Calculate hash value
-    $hash = Get-FileHash '$(System.DefaultWorkingDirectory)\$(configname)\$(configname).zip' | ForEach-Object {$_.Hash}
-    # Insert file URI and hash value in to definition json
-    foreach ($path in @('$(Build.SourcesDirectory)\customPolicyFiles\deployIfNotExists.rules.json','$(Build.SourcesDirectory)\deploy.json')){
-      (get-content "$path").replace('"contentUri": null,',"`"contentUri`": `"$artifact`",") | set-content "$path" -force
-      (get-content "$path").replace('"contentHash": null,',"`"contentHash`": `"$hash`",") | set-content "$path" -force
-    }
-  displayName: 'Update content with artifact location'
-
-- powershell: |
-    # PolicyInsights module requires the latest version of required Azure PowerShell modules
-    Update-Module 'AzureRM' -force
-  displayName: 'Update Azure PowerShell modules'
-
-- task: AzurePowerShell@3
-  displayName: 'Validate resource group and create if needed'
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |
-      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup) -ErrorAction SilentlyContinue
-      if ($null -eq $ResourceGroup) {$ResourceGroup = New-AzureRMResourceGroup -Name $(resourcegroup) -Location 'eastus2'}
-
-- task: AzurePowerShell@3
-  displayName: 'Publish deployifnotexists definition'
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |
-      write-host 'Creating deployifnotexists definition'
-      $deployIfNotExists = @{
-        Name           = '163804a7-0bb0-4c98-a888-e6393dc92389'
-        DisplayName    = '[RFC_CustomGuestConfig]: Deploy requirments to audit firewall settings'
-        Description    = 'Custom Deploy if Not Exists rule to add VM extension, MSI, and guest assignment.'
-        SubscriptionId = '$(SubscriptionID)'
-        Mode           = 'Indexed'
-        Policy         = "$(Build.SourcesDirectory)\customPolicyFiles\deployIfNotExists.rules.json"
-        Metadata       = "$(Build.SourcesDirectory)\customPolicyFiles\deployIfNotExists.metadata.json"
-        }
-      $deployDef = New-AzureRMPolicyDefinition @deployIfNotExists
-
-- task: AzurePowerShell@3
-  displayName: 'Publish audit definition'
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |
-      $auditIfNotExists = @{
-        Name           = '3f6f3c70-1f39-4e6d-9ecc-8e1f377772f9'
-        DisplayName    = '[RFC_CustomGuestConfig]: Audit firewall settings'
-        Description    = 'Custom Audit policy rule.'
-        SubscriptionId = '$(SubscriptionID)'
-        Mode           = 'Indexed'
-        Policy         = "$(Build.SourcesDirectory)\customPolicyFiles\audit.rules.json"
-        Metadata       = "$(Build.SourcesDirectory)\customPolicyFiles\audit.metadata.json"
-        }
-      $auditDef = New-AzureRMPolicyDefinition @auditIfNotExists
-
-- task: AzurePowerShell@3
-  displayName: 'Publish initiative definition'
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |
-      #workaround
-      (get-content '$(Build.SourcesDirectory)\customPolicyFiles\initiative.rules.json').replace('subscriptionID','$(subscriptionID)') | set-content '$(Build.SourcesDirectory)\customPolicyFiles\initiative.rules.json' -force
-
-      $policySet = @{
-        Name             = '62f70032-c579-42ce-9ced-2e49c8f89194'
-        DisplayName      = '[RFC_CustomGuestConfig]: Onboard and Audit custom guest configuration'
-        Description      = 'CD/CD solution for custom guest config validation.'
-        SubscriptionId   = '$(SubscriptionID)'
-        PolicyDefinition = '$(Build.SourcesDirectory)\customPolicyFiles\initiative.rules.json'
-        Metadata         = '$(Build.SourcesDirectory)\customPolicyFiles\initiative.metadata.json'
-      }
-      $setDef = New-AzureRmPolicySetDefinition @policySet
-
-- task: AzurePowerShell@3
-  displayName: 'Assign initiative to resource group'
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |      
-      $initiative = Get-AzureRmPolicySetDefinition -Name '62f70032-c579-42ce-9ced-2e49c8f89194'
-      $ResourceGroup = Get-AzureRmResourceGroup -Name $(resourcegroup)
-      
-      $assignment = @{
-        Name = '8c17a7d8-6071-470d-a023-2776f207f296'
-        DisplayName = '[RFC_CustomGuestConfig]: Functional validation for custom guest configuration'
-        Description = 'Assigns an initiative that includes both the deploy and audit policies required for a custom guest configuration'
-        PolicySetDefinition = $initiative
-        Scope = $ResourceGroup.ResourceId
-        Location = 'eastus2'
-        AssignIdentity = $true
-      }
-      $assignment = New-AzureRmPolicyAssignment @assignment
-
-      # Hold for directory replication
-      Start-sleep 60
-
-      $deployDef = Get-AzureRmPolicyDefinition -Name '163804a7-0bb0-4c98-a888-e6393dc92389'
-      $roleDefinitionIds = $deployDef.Properties.policyRule.then.details.roleDefinitionIds
-
-      if ($roleDefinitionIds.Count -gt 0)
-      {
-          $roleDefinitionIds | ForEach-Object {
-              $roleDefId = $_.Split("/") | Select-Object -Last 1
-              $roleAssignment = Get-AzureRMRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $assignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              If ($null -eq $roleAssignment) {
-                New-AzureRmRoleAssignment -Scope $ResourceGroup.ResourceId -ObjectId $assignment.Identity.PrincipalId -RoleDefinitionId $roleDefId -ErrorAction SilentlyContinue
-              }
-          }
-      }
+    targetPath: '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip'
+    artifactName: '$(windowsConfigName)'
+  
+    displayName: 'Publish Windows package artifact to trigger CI integration tests'

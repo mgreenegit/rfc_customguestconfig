@@ -1,0 +1,34 @@
+{
+    "properties": {
+        "displayName": "[Audit] Firewalld is Enabled",
+        "policyType": "Custom",
+        "mode": "all",
+        "description": "Validates that the Firewalld package is installed, running, and that the default zone is public",
+        "metadata": {
+            "category": "Guest Configuration"
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.GuestConfiguration/guestConfigurationAssignments"
+                    },
+                    {
+                        "field": "name",
+                        "equals": "firewalldenabled"
+                    },
+                    {
+                        "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
+                        "notEquals": "Compliant"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    },
+    "id": "/providers/Microsoft.Authorization/policyDefinitions/0a608b4b-cbbf-4da9-908d-6199bd06aa08",
+    "name": "0a608b4b-cbbf-4da9-908d-6199bd06aa08"
+}

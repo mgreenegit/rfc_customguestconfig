@@ -1,0 +1,251 @@
+{
+    "properties": {
+        "displayName": "[Deploy] Windows Firewall is Enabled",
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "description": "Validates that the Windows host firewall package is enabled and that the default zone is public",
+        "metadata": {
+            "category": "Guest Configuration",
+            "requiredProviders": [
+                "Microsoft.GuestConfiguration"
+            ]
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "anyOf": [
+                            {
+                                "field": "Microsoft.Compute/imagePublisher",
+                                "in": [
+                                    "MicrosoftDynamicsAX",
+                                    "MicrosoftWindowsDesktop",
+                                    "MicrosoftVisualStudio",
+                                    "incredibuild",
+                                    "MicrosoftWindowsServerHPCPack",
+                                    "esri"
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "MicrosoftWindowsServer"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageSKU",
+                                        "notLike": "2008*"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "MicrosoftSQLServer"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageSKU",
+                                        "notEquals": "SQL2008R2SP3-WS2008R2SP1"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "microsoft-dsvm"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "equals": "dsvm-windows"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "microsoft-ads"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "in": [
+                                            "standard-data-science-vm",
+                                            "windows-data-science-vm"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "batch"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "equals": "rendering-windows2016"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "center-for-internet-security-inc"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "like": "cis-windows-server-201*"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "pivotal"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "like": "bosh-windows-server*"
+                                    }
+                                ]
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "equals": "cloud-infrastructure-services"
+                                    },
+                                    {
+                                        "field": "Microsoft.Compute/imageOffer",
+                                        "like": "ad*"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "then": {
+                "effect": "deployIfNotExists",
+                "details": {
+                    "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
+                    "name": "windowsfirewallenabled",
+                    "roleDefinitionIds": [
+                        "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+                    ],
+                    "deployment": {
+                        "properties": {
+                            "mode": "incremental",
+                            "parameters": {
+                                "vmName": {
+                                    "value": "[field('name')]"
+                                },
+                                "location": {
+                                    "value": "[field('location')]"
+                                },
+                                "configurationName": {
+                                    "value": "windowsfirewallenabled"
+                                },
+                                "contentUri": {
+                                    "value": "https://guestconfiguration.blob.core.windows.net/artifacts/windowsfirewallenabled.zip?sv=2018-03-28&sr=b&sig=FDo%2BiFY9TeTKeEEMHHB55EJ7v603to9AxYTeeZuRP8c%3D&st=2019-04-19T01%3A56%3A57Z&se=2022-04-19T01%3A56%3A57Z&sp=rl"
+                                },
+                                "contentHash": {
+                                    "value": "9CA9195F40AD1711C77BD090C36006BA2B05D3FA9AF956A0247EADABBD7095F5"
+                                }
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "parameters": {
+                                    "vmName": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "configurationName": {
+                                        "type": "string"
+                                    },
+                                    "contentUri": {
+                                        "type": "string"
+                                    },
+                                    "contentHash": {
+                                        "type": "string"
+                                    }
+                                },
+                                "resources": [
+                                    {
+                                        "apiVersion": "2018-11-20",
+                                        "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
+                                        "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('configurationName'))]",
+                                        "location": "[parameters('location')]",
+                                        "properties": {
+                                            "guestConfiguration": {
+                                                "name": "[parameters('configurationName')]",
+                                                "contentUri": "[parameters('contentUri')]",
+                                                "contentHash": "[parameters('contentHash')]",
+                                                "version": "1.0.0.0"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "apiVersion": "2017-03-30",
+                                        "type": "Microsoft.Compute/virtualMachines",
+                                        "identity": {
+                                            "type": "SystemAssigned"
+                                        },
+                                        "name": "[parameters('vmName')]",
+                                        "location": "[parameters('location')]"
+                                    },
+                                    {
+                                        "apiVersion": "2015-05-01-preview",
+                                        "name": "[concat(parameters('vmName'), '/AzurePolicyforWindows')]",
+                                        "type": "Microsoft.Compute/virtualMachines/extensions",
+                                        "location": "[parameters('location')]",
+                                        "properties": {
+                                            "publisher": "Microsoft.GuestConfiguration",
+                                            "type": "ConfigurationforWindows",
+                                            "typeHandlerVersion": "1.1",
+                                            "autoUpgradeMinorVersion": true,
+                                            "settings": {},
+                                                "protectedSettings": {}
+                                                },
+                                                "dependsOn": [
+                                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/providers/Microsoft.GuestConfiguration/guestConfigurationAssignments/',parameters('configurationName'))]",
+                                                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),'/extensions','/EnableHashValidation')]"
+                                                ]
+                                            },
+                                            {
+                                                "apiVersion": "2018-06-01",
+                                                "name": "[concat(parameters('vmName'),'/EnableHashValidation')]",
+                                                "type": "Microsoft.Compute/virtualMachines/extensions",
+                                                "location": "[parameters('location')]",
+                                                "properties": {
+                                                    "publisher": "Microsoft.Compute",
+                                                    "type": "CustomScriptExtension",
+                                                    "typeHandlerVersion": "1.9",
+                                                    "settings": {},
+                                                        "protectedSettings": {
+                                                            "commandToExecute": "powershell -c \" & {if(!(Test-Path HKLM:/Software/Microsoft/Windows/DSC)){New-Item -Path HKLM:/Software/Microsoft/Windows/DSC -Force; New-ItemProperty -Path HKLM:/Software/Microsoft/Windows/DSC -Name EnableCustomPolicyHashValidation -Value 1 -PropertyType DWORD -Force}else {New-ItemProperty -Path HKLM:/Software/Microsoft/Windows/DSC -Name EnableCustomPolicyHashValidation -Value 1 -PropertyType DWORD -Force}} \" "
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "id": "/providers/Microsoft.Authorization/policyDefinitions/c1e5f244-4d6e-4c7d-aad3-256b4870f671",
+                "name": "c1e5f244-4d6e-4c7d-aad3-256b4870f671"
+            }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "assignmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "The GUID of the policy assignment for the role assignment to be associated with."
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource group to use as the assignment scope.  This template does not handle subscription level assignments."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "[parameters('assignmentName')]",
+      "apiVersion": "2018-12-01-preview",
+      "properties": {
+        "roleDefinitionId": "[concat('/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[reference(concat('Microsoft.Authorization/policyAssignments/', parameters('assignmentName')),'2018-05-01','Full').identity.principalId]",
+        "scope": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'))]"
+      }
+    }
+  ]
+}
