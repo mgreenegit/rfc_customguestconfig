@@ -231,7 +231,7 @@ steps:
       Write-Host "##vso[task.setvariable variable=linuxInitiativeId]$linuxInitiativeId"
       Write-Host "##vso[task.setvariable variable=windowsInitiativeId]$windowsInitiativeId"
 
-  displayName: 'Upload artifacts, get SAS tokens and publish definitions/initives'
+  displayName: 'Upload artifacts, get SAS tokens and publish definitions/initiatives'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
