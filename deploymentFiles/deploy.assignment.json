@@ -42,5 +42,11 @@
             "scope": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'))]"
          }
       }
-   ]
+   ],
+   "outputs": {
+      "assignmentId": {
+         "type": "string",
+         "value": "[reference(concat('Microsoft.Authorization/policyAssignments/', parameters('assignmentName')),'2018-05-01','Full')]"
+      }
+   }
 }

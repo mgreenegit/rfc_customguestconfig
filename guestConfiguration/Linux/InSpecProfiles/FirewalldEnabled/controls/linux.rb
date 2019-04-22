@@ -1,3 +1,5 @@
+val_packages = attribute('DefaultFirewalldProfile', description: 'Choose the default profile for Firewalld.')
+
 control 'Firewalld Enabled' do
   impact 1.0
   title 'Firewalld is Enabled'

@@ -42,7 +42,11 @@ steps:
     script: |
 
       # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules),PSScriptAnalyzer -Repository 'PSGallery' -Scope 'CurrentUser' -Verbose -Force
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer 
+        -Repository 'PSGallery' `
+        -Scope 'CurrentUser' `
+        -Verbose `
+        -Force
       
   displayName: 'Setup/validate Windows PowerShell environment'
 
@@ -53,7 +57,12 @@ steps:
     script: |
       
       # Lint PowerShell scripts
-      Invoke-ScriptAnalyzer -Path '$(Build.SourcesDirectory)\guestConfiguration\' -IncludeDefaultRules -Recurse -Severity Error -ReportSummary -EnableExit
+      Invoke-ScriptAnalyzer -Path '$(Build.SourcesDirectory)\guestConfiguration\' `   # Analyzing all files in GuestConfiguration folder (mandatory)
+        -IncludeDefaultRules `                                                        # using default PSSA rules until specific rules exist for GC content (optional)
+        -Recurse `                                                                    # include all subfolders when looking for PowerShell scripts (optional)
+        -Severity Error `                                                             # Only stopping the build if errors are found, parsing issues are ignored (optional)
+        -ReportSummary `                                                              # writes details of any issues to build log (optional)
+        -EnableExit                                                                   # exits current PowerShell session when complete and returns Exit code based on number of errors found (optional)
 
   displayName: 'Lint PowerShell scripts in Guest Configuration content'
 
@@ -66,12 +75,12 @@ steps:
       # Compile DSC MOF files
       
         # Linux configuration
-        . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
-        $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'
+        . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1         # dot source the script containing the configuration, to load it in memory
+        $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'        # compile the configuration and output to the Linux folder
 
         # Windows configuration
-        . $(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1
-        $(windowsConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Windows'
+        . $(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1     # dot source the script containing the configuration, to load it in memory
+        $(windowsConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Windows'    # compile the configuration and output to the Windows folder
       
   displayName: 'Compile DSC MOF files'
 
@@ -131,9 +140,35 @@ steps:
       $linuxArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob '$(linuxConfigName).zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
       $windowsArtifactSAS = New-AzStorageBlobSASToken -Context $Context -Container $(storageContainerName) -Blob '$(windowsConfigName).zip' -StartTime $StartTime -ExpiryTime $ExpiryTime -Permission rl -FullUri -Verbose
 
+      # Build Policy parameter tables
+      $LinuxPolicyParameterInfo = @(
+        @{
+            Name = 'DefaultFirewalldProfile'                                                                        # Policy parameter name (mandatory)
+            DisplayName = 'Default Firewalld Profile.'                                                              # Policy parameter display name (mandatory)
+            Description = "Choose the default profile for Firewalld."                                               # Policy parameter description (optional)
+            ResourceType = "ChefInSpecResource"                                                                     # dsc configuration resource type (mandatory)
+            ResourceId = 'FirewalldEnabled'                                                                         # dsc configuration resource property name (mandatory)
+            ResourcePropertyName = "AttributesYmlContent"                                                           # dsc configuration resource property name (mandatory)
+            DefaultValue = 'public'                                                                                 # Policy parameter default value (optional)
+            AllowedValues = @('drop','block','public','external','dmz','work','home','internal','trusted')          # Policy parameter allowed values (optional)
+        }
+      )
+      $WindowsPolicyParameterInfo = @(
+        @{
+            Name = 'EnablePublicProfile'                                                                            # Policy parameter name (mandatory)
+            DisplayName = 'Enable Public profile'                                                                   # Policy parameter display name (mandatory)
+            Description = "Enables Windows Firewall for Public profile. (0 to Disable, 1 to Enable)"                # Policy parameter description (optional)
+            ResourceType = "Registry"                                                                               # dsc configuration resource type (mandatory)
+            ResourceId = 'Registry HKLM:\Software\Policies\Microsoft\WindowsFirewall\PublicProfile\EnableFirewall'  # dsc configuration resource property name (mandatory)
+            ResourcePropertyName = "ValueData"                                                                      # dsc configuration resource property name (mandatory)
+            DefaultValue = '1'                                                                                      # Policy parameter default value (optional)
+            AllowedValues = @('0','1')                                                                              # Policy parameter allowed values (optional)
+        }
+      )
+      
       # Overwrite definition/initiative files
       New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS -DisplayName 'Audit when Firewalld is not enabled' -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' -Platform Linux -Verbose
-      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Audit when Windows Firewall is not enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Windows' -Platform Windows -Verbose
+      New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS -DisplayName 'Audit when Windows Firewall is not enabled' -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' -Version 1.0.0.0 -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Windows' -Platform Windows -Parameter $WindowsPolicyParameterInfo -Verbose
       
       # Publish definitions/initiatives
       $publishedLinuxPolicies = Publish-GuestConfigurationPolicy -Path '$(Build.SourcesDirectory)\policyFiles\Linux\' -Verbose
@@ -156,6 +191,7 @@ steps:
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
       overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(LinuxInitiativeId) -resourceGroupName $(resourcegroup)
+      deploymentOutputs: linuxAssignment
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -166,8 +202,31 @@ steps:
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
       overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(WindowsInitiativeId) -resourceGroupName $(resourcegroup)
+      deploymentOutputs: windowsAssignment
 
   displayName: 'Deploy Policy assignment for Windows'
+
+- task: AzurePowerShell@4
+  inputs:
+      azureSubscription: 'ARM'
+      azurePowerShellVersion: 'latestVersion'
+      scriptType: 'inlineScript'
+      inline: |
+
+        # Allow enough time for replication of assignment across geographies
+        Start-Sleep -seconds 30
+
+        # Use Policy Insights cmdlets to get assignment ids
+        $scope = '/subscriptions/$(subscriptionId)/resourceGroups/$(resourcegroup)'
+        
+        $linuxAssignmentId = Get-AzPolicyAssignment -Name $(linuxConfigName) -scope $scope
+        $windowsAssignmentId = Get-AzPolicyAssignment -Name $(windowsConfigName) -scope $scope
+
+        # Output values to build variables for later tasks to consume as setvarStep.name
+        Write-Host "##vso[task.setvariable variable=linuxAssignmentId]$linuxAssignmentId"
+        Write-Host "##vso[task.setvariable variable=windowsAssignmentId]$windowsAssignmentId"
+
+  displayName: 'Store assignment ids as build variables for next step'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
@@ -175,7 +234,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -185,7 +244,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
