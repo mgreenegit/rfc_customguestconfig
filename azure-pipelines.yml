@@ -235,7 +235,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup) -Verbose
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -245,7 +245,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup) -Verbose
+      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
 
@@ -277,7 +277,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup) -Verbose
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -287,7 +287,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup) -Verbose
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
