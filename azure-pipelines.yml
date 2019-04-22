@@ -11,16 +11,20 @@ variables:
     value: '2'
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
-  - name: 'linuxConfigName'
-    value: 'firewalldenabled'
-  - name: 'windowsConfigName'
-    value: 'windowsfirewallenabled'
   - name: 'resourcegroup'
     value: 'rfc_customguestconfig'
   - name: 'storageAccountName'
     value: 'guestconfiguration'
   - name: 'storageContainerName'
     value: 'artifacts'
+  - name: 'linuxConfigName'
+    value: 'firewalldenabled'
+  - name: 'linuxAssignmentName'
+    value: '72cf8be5-ca7e-425b-a37b-d6340a3f1635'
+  - name: 'windowsConfigName'
+    value: 'windowsfirewallenabled'
+  - name: 'windowsAssignmentName'
+    value: '2067efd3-5978-4372-b7ba-c7b2060dd889'
 
 trigger:
   branches:
@@ -235,7 +239,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -245,31 +249,9 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsAssignmentName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy assignment for Windows'
-
-- task: AzurePowerShell@4
-  inputs:
-      azureSubscription: 'ARM'
-      azurePowerShellVersion: 'latestVersion'
-      scriptType: 'inlineScript'
-      inline: |
-
-        # Allow enough time for replication of assignment across geographies
-        Start-Sleep -seconds 30
-
-        # Use Policy Insights cmdlets to get assignment ids
-        $scope = '/subscriptions/$(subscriptionId)/resourceGroups/$(resourcegroup)'
-        
-        $linuxAssignmentId = Get-AzPolicyAssignment -Name $(linuxConfigName) -scope $scope
-        $windowsAssignmentId = Get-AzPolicyAssignment -Name $(windowsConfigName) -scope $scope
-
-        # Output values to build variables for later tasks to consume as setvarStep.name
-        Write-Host "##vso[task.setvariable variable=linuxAssignmentId]$linuxAssignmentId"
-        Write-Host "##vso[task.setvariable variable=windowsAssignmentId]$windowsAssignmentId"
-
-  displayName: 'Store assignment ids as build variables for next step'
 
 - task: AzureResourceGroupDeployment@2
   inputs:
@@ -277,7 +259,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -287,7 +269,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
