@@ -42,9 +42,9 @@ steps:
     script: |
 
       # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules),PSScriptAnalyzer `
-        -Repository 'PSGallery' `
-        -Scope 'CurrentUser' `
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer `                              # include list of modules from variables and project requirements (mandatory)
+        -Repository 'PSGallery' `                                                             # specify PowerShell Gallery in case build runs in some other environment (optional)
+        -Scope 'CurrentUser' `                                                                # user level installation (mandatory)
         -Verbose `
         -Force
       
@@ -57,12 +57,12 @@ steps:
     script: |
       
       # Lint PowerShell scripts
-      Invoke-ScriptAnalyzer -Path '$(Build.SourcesDirectory)\guestConfiguration\' `   # Analyzing all files in GuestConfiguration folder (mandatory)
-        -IncludeDefaultRules `                                                        # using default PSSA rules until specific rules exist for GC content (optional)
-        -Recurse `                                                                    # include all subfolders when looking for PowerShell scripts (optional)
-        -Severity Error `                                                             # Only stopping the build if errors are found, parsing issues are ignored (optional)
-        -ReportSummary `                                                              # writes details of any issues to build log (optional)
-        -EnableExit                                                                   # exits current PowerShell session when complete and returns Exit code based on number of errors found (optional)
+      Invoke-ScriptAnalyzer -Path '$(Build.SourcesDirectory)\guestConfiguration\' `           # Analyzing all files in GuestConfiguration folder (mandatory)
+        -IncludeDefaultRules `                                                                # using default PSSA rules until specific rules exist for GC content (optional)
+        -Recurse `                                                                            # include all subfolders when looking for PowerShell scripts (optional)
+        -Severity Error `                                                                     # Only stopping the build if errors are found, parsing issues are ignored (optional)
+        -ReportSummary `                                                                      # writes details of any issues to build log (optional)
+        -EnableExit                                                                           # exits current PowerShell session when complete and returns Exit code based on number of errors found (optional)
 
   displayName: 'Lint PowerShell scripts in Guest Configuration content'
 
@@ -75,12 +75,12 @@ steps:
       # Compile DSC MOF files
       
         # Linux configuration
-        . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1         # dot source the script containing the configuration, to load it in memory
-        $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'        # compile the configuration and output to the Linux folder
+        . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1           # dot source the script containing the configuration, to load it in memory
+        $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'          # compile the configuration and output to the Linux folder
 
         # Windows configuration
-        . $(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1     # dot source the script containing the configuration, to load it in memory
-        $(windowsConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Windows'    # compile the configuration and output to the Windows folder
+        . $(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).ps1       # dot source the script containing the configuration, to load it in memory
+        $(windowsConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Windows'      # compile the configuration and output to the Windows folder
       
   displayName: 'Compile DSC MOF files'
 
@@ -96,16 +96,16 @@ steps:
       # Create artifacts
       
         # New guest configuration package for Linux
-        New-GuestConfigurationPackage -Name '$(linuxConfigName)' `
-        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' `
-        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Linux\InSpecProfiles' `
-        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
+        New-GuestConfigurationPackage -Name '$(linuxConfigName)' `                          # name to be use for file.zip (mandatory)
+        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).mof' ` # path to mof file (mandatory)
+        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Linux\InSpecProfiles' ` # use this to include custom files such as InSpec content (optional)
+        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `                           # file location to output the .zip package (mandatory)
         -Verbose
 
         # New guest configuration package for Windows
-        New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
-        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
-        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
+        New-GuestConfigurationPackage -Name '$(windowsConfigName)' `                      # name to be use for file.zip (mandatory)
+        -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' ` # path to mof file (mandatory)
+        -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `                         # file location to output the .zip package (mandatory)
         -Verbose
   
   displayName: 'Create content artifacts'
