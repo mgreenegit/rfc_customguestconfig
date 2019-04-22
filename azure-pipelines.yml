@@ -274,3 +274,16 @@ steps:
 
   displayName: 'Deploy Policy role assignment for Windows'
   
+- task: PublishPipelineArtifact@0
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)\artifacts\$(linuxConfigName)\$(linuxConfigName).zip'
+    artifactName: '$(linuxConfigName)'
+  
+    displayName: 'Publish Linux package artifact to trigger CI integration tests'
+
+- task: PublishPipelineArtifact@0
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)\artifacts\$(windowsConfigName)\$(windowsConfigName).zip'
+    artifactName: '$(windowsConfigName)'
+  
+    displayName: 'Publish Windows package artifact to trigger CI integration tests'
