@@ -174,7 +174,7 @@ steps:
             Description = "Choose the default profile for Firewalld."                                               # Policy parameter description (optional)
             ResourceType = "ChefInSpecResource"                                                                     # dsc configuration resource type (mandatory)
             ResourceId = 'FirewalldEnabled'                                                                         # dsc configuration resource property name (mandatory)
-            ResourcePropertyName = "AttributesYmlContent"                                                           # dsc configuration resource property name (mandatory)
+            ResourcePropertyName = "AttributesYmlContent"                                                           # dsc configuration resource name (mandatory)
             DefaultValue = 'public'                                                                                 # Policy parameter default value (optional)
             AllowedValues = @('drop','block','public','external','dmz','work','home','internal','trusted')          # Policy parameter allowed values (optional)
         }
@@ -185,7 +185,7 @@ steps:
             DisplayName = 'Enable Public profile'                                                                   # Policy parameter display name (mandatory)
             Description = "Enables Windows Firewall for Public profile. (0 to Disable, 1 to Enable)"                # Policy parameter description (optional)
             ResourceType = "Registry"                                                                               # dsc configuration resource type (mandatory)
-            ResourceId = 'Registry HKLM:\Software\Policies\Microsoft\WindowsFirewall\PublicProfile\EnableFirewall'  # dsc configuration resource property name (mandatory)
+            ResourceId = 'EnableFirewall'                                                                           # dsc configuration resource name (mandatory)
             ResourcePropertyName = "ValueData"                                                                      # dsc configuration resource property name (mandatory)
             DefaultValue = '1'                                                                                      # Policy parameter default value (optional)
             AllowedValues = @('0','1')                                                                              # Policy parameter allowed values (optional)
