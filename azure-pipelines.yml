@@ -42,7 +42,7 @@ steps:
     script: |
 
       # Install required modules from PowerShell Gallery
-      Install-Module -Name $(requiredModules),PSScriptAnalyzer 
+      Install-Module -Name $(requiredModules),PSScriptAnalyzer `
         -Repository 'PSGallery' `
         -Scope 'CurrentUser' `
         -Verbose `
