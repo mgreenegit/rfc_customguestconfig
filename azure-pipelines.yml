@@ -116,7 +116,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
-      overrideParameters: -storageAccountName $(storageAccountName) -containerName $(storageContainerName)
+      overrideParameters: -storageAccountName $(storageAccountName) -containerName $(storageContainerName) -Verbose
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -235,7 +235,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxConfigName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup) -Verbose
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -245,7 +245,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsConfigName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup) -Verbose
 
   displayName: 'Deploy Policy assignment for Windows'
 
@@ -277,7 +277,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup) -Verbose
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -287,7 +287,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentId) -resourceGroupName $(resourcegroup) -Verbose
 
   displayName: 'Deploy Policy role assignment for Windows'
   
