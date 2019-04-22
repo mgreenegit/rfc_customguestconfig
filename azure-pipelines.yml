@@ -171,7 +171,7 @@ steps:
         -Verbose
 
       # Build Policy parameter tables
-      $LinuxPolicyParameterInfo = @(
+      $linuxPolicyParameterInfo = @(
         @{
             Name = 'DefaultFirewalldProfile'                                                                        # Policy parameter name (mandatory)
             DisplayName = 'Default Firewalld Profile.'                                                              # Policy parameter display name (mandatory)
@@ -183,7 +183,7 @@ steps:
             AllowedValues = @('drop','block','public','external','dmz','work','home','internal','trusted')          # Policy parameter allowed values (optional)
         }
       )
-      $WindowsPolicyParameterInfo = @(
+      $windowsPolicyParameterInfo = @(
         @{
             Name = 'EnablePublicProfile'                                                                            # Policy parameter name (mandatory)
             DisplayName = 'Enable Public profile'                                                                   # Policy parameter display name (mandatory)
@@ -203,6 +203,7 @@ steps:
         -Version 1.0.0.0 `
         -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' `
         -Platform Linux `
+        -Parameter $linuxPolicyParameterInfo `
         -Verbose
       New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS `
         -DisplayName 'Audit when Windows Firewall is not enabled' `
@@ -210,7 +211,7 @@ steps:
         -Version 1.0.0.0 `
         -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Windows' `
         -Platform Windows `
-        -Parameter $WindowsPolicyParameterInfo `
+        -Parameter $windowsPolicyParameterInfo `
         -Verbose
       
       # Publish definitions/initiatives
