@@ -254,6 +254,12 @@ steps:
 
   displayName: 'Deploy Policy assignment for Windows'
 
+- task: Delay@1
+  inputs:
+    delayForMinutes: '.5'
+      
+  displayName: 'Allow time for the Assignment to be replicated across geographies'
+
 - task: AzureResourceGroupDeployment@2
   inputs:
       azureSubscription: 'ARM'
@@ -270,7 +276,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
