@@ -48,7 +48,7 @@ Configuration WindowsFirewallEnabled {
 
     Node WindowsFirewallEnabled {
 
-        Registry 'Registry HKLM:\Software\Policies\Microsoft\WindowsFirewall\PublicProfile\EnableFirewall' {
+        Registry 'EnableFirewall' {
             ValueName   = 'EnableFirewall'
             Key         = 'HKLM:\Software\Policies\Microsoft\WindowsFirewall\PublicProfile'
             ValueType   = 'DWord'
