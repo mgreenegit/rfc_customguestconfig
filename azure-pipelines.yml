@@ -19,8 +19,12 @@ variables:
     value: 'artifacts'
   - name: 'linuxConfigName'
     value: 'firewalldenabled'
+  - name: 'linuxPolicyVersion'
+    value: '1.0.0.0'
   - name: 'linuxAssignmentName'
     value: '72cf8be5-ca7e-425b-a37b-d6340a3f1635'
+  - name: 'windowsPolicyVersion'
+    value: '1.0.0.0'
   - name: 'windowsConfigName'
     value: 'windowsfirewallenabled'
   - name: 'windowsAssignmentName'
@@ -200,7 +204,7 @@ steps:
       New-GuestConfigurationPolicy -ContentUri $linuxArtifactSAS `
         -DisplayName 'Audit when Firewalld is not enabled' `
         -Description 'Validates that the Firewalld package is installed, running, and that the default zone is public' `
-        -Version 1.0.0.0 `
+        -Version $(linuxPolicyVersion) `
         -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Linux' `
         -Platform Linux `
         -Parameter $linuxPolicyParameterInfo `
@@ -208,7 +212,7 @@ steps:
       New-GuestConfigurationPolicy -ContentUri $windowsArtifactSAS `
         -DisplayName 'Audit when Windows Firewall is not enabled' `
         -Description 'Validates that the Windows host firewall package is enabled and that the default zone is public' `
-        -Version 1.0.0.0 `
+        -Version $(windowsPolicyVersion) `
         -DestinationPath '$(Build.SourcesDirectory)\policyFiles\Windows' `
         -Platform Windows `
         -Parameter $windowsPolicyParameterInfo `

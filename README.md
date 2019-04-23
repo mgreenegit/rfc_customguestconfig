@@ -151,3 +151,16 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Release Notes
+
+20190423
+
+- Resolved issue where backslashes in registry resource name where being caught as escape characters in JSON
+- Moved package version to variable for each OS
+
+20190422
+
+- Refactored project to use ARM deployment templates rather than PowerShell wherever possible
+- Added Linux example
+- Added blob storage example with SAS token
