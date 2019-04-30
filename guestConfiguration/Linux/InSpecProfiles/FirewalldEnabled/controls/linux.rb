@@ -1,4 +1,4 @@
-val_packages = attribute('DefaultFirewalldProfile', description: 'Choose the default profile for Firewalld.')
+val_zone = attribute('DefaultFirewalldProfile', description: 'Choose the default profile for Firewalld.')
 
 control 'Firewalld Enabled' do
   impact 1.0
@@ -7,6 +7,6 @@ control 'Firewalld Enabled' do
 
   describe firewalld do
     it { should be_running }
-    its('default_zone') { should eq 'public' }
+    its('default_zone') { should eq val_zone }
   end  
 end
