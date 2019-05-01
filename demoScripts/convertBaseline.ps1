@@ -4,7 +4,7 @@
 
 # Install required modules
 # BaselineManagement maps to specific versions of other modules.  It needs to be updated.
-install-module guestconfiguration, gpregistrypolicyparser, securitypolicydsc, auditpolicydsc, baselinemanagement -scope currentuser -Repository psgallery
+Install-Module az.resources, az.policyinsights, az.storage, guestconfiguration, gpregistrypolicyparser, securitypolicydsc, auditpolicydsc, baselinemanagement -scope currentuser -Repository psgallery -AllowClobber
 
 # Download 2019 baseline files
 # https://docs.microsoft.com/en-us/windows/security/threat-protection/security-compliance-toolkit-10
@@ -26,6 +26,9 @@ ConvertFrom-GPO -Path 'C:\git\policyfiles\downloads\GPOs\{C92CC433-A4EA-47B1-8B2
 # Compile configuration
 # MANUAL STEP - Replace PSDesiredStateConfiguration with PSDscResources
 # OPTIONAL MANUAL STEP - Rename configuration
+Rename-Item -Path C:\git\policyfiles\DSCFromGPO.ps1 -NewName C:\git\policyfiles\Server2019Baseline.ps1
+(Get-Content -Path C:\git\policyfiles\Server2019Baseline.ps1).Replace('DSCFromGPO', 'Server2019Basleline') | Set-Content -Path C:\git\policyfiles\Server2019Baseline.ps1
+(Get-Content -Path C:\git\policyfiles\Server2019Baseline.ps1).Replace('PSDesiredStateConfiguration', 'PSDscResources') | Set-Content -Path C:\git\policyfiles\Server2019Baseline.ps1
 C:\git\policyfiles\Server2019Baseline.ps1
 
 # Create Policy content package
