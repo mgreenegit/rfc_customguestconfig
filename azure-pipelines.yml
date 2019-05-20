@@ -116,7 +116,7 @@ steps:
         # New guest configuration package for Windows
         New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
         -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
-        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Windows\InSpecProfiles','$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec' `
+        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Windows\InSpecProfiles,$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec' `
         -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
         -Verbose
   
