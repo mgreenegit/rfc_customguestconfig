@@ -1,0 +1,9 @@
+name: Windows Firewall Enabled
+title: Windows Firewall Enabled
+maintainer: Microsoft Corporation
+summary: Validates that the registry key is present indicating that the public profile in Windows Firewall is enabled
+copyright: Microsoft Corporation
+license: MIT
+version: 1.0.0
+supports:
+  - os-family: windows

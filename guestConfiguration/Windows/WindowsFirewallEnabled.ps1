@@ -1,7 +1,7 @@
 ﻿
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 2.0.0
 
 .GUID d9e8074b-af23-478c-b6a5-bdffd18cdf36
 
@@ -44,15 +44,13 @@ Param()
 
 Configuration WindowsFirewallEnabled {
 
-    Import-DscResource -ModuleName 'GuestConfiguration'
+    Import-DscResource -ModuleName 'gcInSpec'
 
     Node WindowsFirewallEnabled {
 
-        Registry 'EnableFirewall' {
-            ValueName   = 'EnableFirewall'
-            Key         = 'HKLM:\Software\Policies\Microsoft\WindowsFirewall\PublicProfile'
-            ValueType   = 'DWord'
-            ValueData   = 1
+        gcInSpec WindowsFirewallEnabled {
+            Name = 'WindowsFirewallEnabled'
+            #AttributesYmlContent = "DefaultFirewalldProfile: [public]"
         }
     }
 }
