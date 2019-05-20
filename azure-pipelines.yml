@@ -81,6 +81,9 @@ steps:
     script: |
 
       # Compile DSC MOF files
+
+        # Make custom resource available to PowerShell
+        $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
       
         # Linux configuration
         . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
