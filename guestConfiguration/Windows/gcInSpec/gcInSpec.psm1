@@ -1,7 +1,8 @@
 
 $script:Supported_InSpec_Version = [version]'4.3.2.1'
-$script:gcPath = split-path -parent $MyInvocation.MyCommand.Definition
-$script:gcPath = $script:gcPath -replace 'Program Files', 'progra~1'
+$script:module_path = split-path -parent $MyInvocation.MyCommand.Definition
+$script:module_path = $script:module_path -replace 'Program Files', 'progra~1'
+$script:guest_assignment_folder = (Get-Item $script:module_path).Parent.FullName
 
 <#
     .SYNOPSIS
@@ -50,14 +51,14 @@ function Install-Inspec {
     $Inspec_Package_Name = "inspec-$InSpec_Package_Version-$($InSpec_Version.Revision)-x64.msi"
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $script:gcPath\$Inspec_Package_Name"
-    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$script:gcPath\$Inspec_Package_Name" #-RetryIntervalSec 5 -MaximumRetryCount 12 
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $script:guest_assignment_folder\$Inspec_Package_Name"
+    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$script:guest_assignment_folder\$Inspec_Package_Name" #-RetryIntervalSec 5 -MaximumRetryCount 12 
         
     $msiArguments = @(
         '/i'
-        ('"{0}"' -f "$script:gcPath\$Inspec_Package_Name")
+        ('"{0}"' -f "$script:guest_assignment_folder\$Inspec_Package_Name")
         '/qn'
-        "/L*v `"$script:gcPath\$Inspec_Package_Name.log`""
+        "/L*v `"$script:guest_assignment_folder\$Inspec_Package_Name.log`""
     )
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Installing InSpec with arguments: $msiArguments"
     Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList $msiArguments -Wait -NoNewWindow
@@ -254,18 +255,20 @@ class gcInSpec {
         if ($Installed_InSpec_Versions -notcontains $this.version) {
             Install-Inspec
         }
+
+        
         
         $InSpecArgs = @{
-            policy_folder_path          = "$script:gcPath\InSpecProfiles\"
-            inspec_output_file_path     = "$script:gcPath\$($this.name).json"
-            inspec_cli_output_file_path = "$script:gcPath\$($this.name).cli"
+            policy_folder_path          = "$script:guest_assignment_folder\$($this.name)\"
+            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
+            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
         }
 
         Invoke-InSpec @InSpecArgs
         
         $ConvertArgs = @{
-            inspec_output_file_path     = "$script:gcPath\$($this.name).json"
-            inspec_cli_output_file_path = "$script:gcPath\$($this.name).cli"
+            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
+            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
         }
         
         $Results = ConvertFrom-InSpec @ConvertArgs
@@ -291,16 +294,16 @@ class gcInSpec {
         }
 
         $InSpecArgs = @{
-            policy_folder_path          = "$script:gcPath\InSpecProfiles\"
-            inspec_output_file_path     = "$script:gcPath\$($this.name).json"
-            inspec_cli_output_file_path = "$script:gcPath\$($this.name).cli"
+            policy_folder_path          = "$script:guest_assignment_folder\$($this.name)\"
+            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
+            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
         }
 
         Invoke-InSpec @InSpecArgs
         
         $ConvertArgs = @{
-            inspec_output_file_path     = "$script:gcPath\$($this.name).json"
-            inspec_cli_output_file_path = "$script:gcPath\$($this.name).cli"
+            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
+            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
         }
         
         $Results = ConvertFrom-InSpec @ConvertArgs
