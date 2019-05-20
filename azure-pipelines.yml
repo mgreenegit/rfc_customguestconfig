@@ -103,6 +103,9 @@ steps:
 
       # Create artifacts folder
       New-Item -Path '$(Build.SourcesDirectory)\artifacts\' -Type Directory
+
+      # Make custom resource available to PowerShell
+      $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
       
       # Create artifacts
       
@@ -116,7 +119,7 @@ steps:
         # New guest configuration package for Windows
         New-GuestConfigurationPackage -Name '$(windowsConfigName)' `
         -Configuration '$(Build.SourcesDirectory)\guestConfiguration\Windows\$(windowsConfigName).mof' `
-        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Windows\InSpecProfiles,$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec' `
+        -FilesToInclude '$(Build.SourcesDirectory)\guestConfiguration\Windows\InSpecProfiles' `
         -DestinationPath '$(Build.SourcesDirectory)\artifacts\' `
         -Verbose
   
