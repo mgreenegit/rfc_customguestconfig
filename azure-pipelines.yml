@@ -14,7 +14,7 @@ variables:
   - name: 'resourcegroup'
     value: 'rfc_customguestconfig'
   - name: 'storageAccountName'
-    value: 'guestconfiguration'
+    value: 'gcinspec'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
