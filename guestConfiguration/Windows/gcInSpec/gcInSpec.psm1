@@ -299,7 +299,10 @@ class gcInSpec {
         
         $get = ConvertFrom-InSpec @ConvertArgs
         
-        $this.Reasons       = $get.reasons
+        $this.name      = $this.name
+        $this.version   = $Installed_InSpec_Versions
+        $this.status    = $get.status
+        $this.Reasons   = $get.reasons
         return $this
     }
 }
