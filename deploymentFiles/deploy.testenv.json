@@ -28,7 +28,7 @@
             "linux": {
                 "ImagePublisher": "RedHat",
                 "ImageOffer": "RHEL",
-                "ImageSKU": "7.5",
+                "ImageSKU": "7.4",
                 "osDiskName": "linux-osdisk",
                 "nicName": "linux-nic",
                 "vmName": "linux"
