@@ -53,7 +53,7 @@ function Install-Inspec {
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $script:guest_assignment_folder\$Inspec_Package_Name"
-    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$script:guest_assignment_folder\$Inspec_Package_Name" #-RetryIntervalSec 5 -MaximumRetryCount 12 
+    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$script:guest_assignment_folder\$Inspec_Package_Name" -RetryIntervalSec 5 -MaximumRetryCount 12 
         
     $msiArguments = @(
         '/i'
@@ -131,7 +131,7 @@ function ConvertFrom-InSpec {
     
     # get JSON file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading json output from $inspec_output_file_path" 
-    $inspecResults = Get-Content $inspec_output_file_path | ConvertFrom-Json #-Depth 10
+    $inspecResults = Get-Content $inspec_output_file_path | ConvertFrom-Json -Depth 10
     
     # get raw content from CLI file
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_cli_output_file_path" 
