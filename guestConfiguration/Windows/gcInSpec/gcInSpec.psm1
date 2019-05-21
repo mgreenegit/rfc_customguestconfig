@@ -3,6 +3,7 @@ $script:Supported_InSpec_Version = [version]'4.3.2.1'
 $script:module_path = split-path -parent $MyInvocation.MyCommand.Definition
 $script:module_path = $script:module_path -replace 'Program Files', 'progra~1'
 $script:guest_assignment_folder = (Get-Item $script:module_path).Parent.FullName
+$script:guest_assignment_folder = $script:guest_assignment_folder -replace 'Program Files', 'progra~1'
 
 <#
     .SYNOPSIS
@@ -147,6 +148,9 @@ function ConvertFrom-InSpec {
     # there can be multiple controls in a profile
     $controls = @()
 
+    # store reasons code/phrase for Get
+    $reasons = @()
+
     # results are compliant until a failed test is returned
     [bool]$is_compliant = $true
 
@@ -190,7 +194,7 @@ function ConvertFrom-InSpec {
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control reason phrases: $reason_phrase)"
 
-        # each control object
+        # each control object (this might not be needed?)
         $controls += New-Object -TypeName PSObject -Property @{
             id             = $control.id
             profile_id     = $control.profile_id
@@ -199,6 +203,11 @@ function ConvertFrom-InSpec {
             code_desc      = $control.code_desc
             message        = $control.message
             reason_phrase  = $reason_phrase
+        }
+
+        $reasons += New-Object -TypeName PSObject -Property @{
+            code    = $control.code_desc
+            phrase  = $control.reason_phrase
         }
     }
 
@@ -211,7 +220,8 @@ function ConvertFrom-InSpec {
         statistics     = $statistics
         controls       = $controls
         status         = $status
-        reason_phrases = $inspecCLI
+        cli            = $inspecCLI
+        reasons        = $reasons
     }
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($inspecObject.status)"
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reason phrase: $($inspecObject.reason_phrases)"
@@ -249,29 +259,7 @@ class gcInSpec {
     #>
     [bool] Test() {
     
-        Write-Verbose "[$((get-date).getdatetimeformats()[45])] required InSpec version: $($this.version)"
-
-        $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
-        if ($Installed_InSpec_Versions -notcontains $this.version) {
-            Install-Inspec
-        }
-
-        
-        
-        $InSpecArgs = @{
-            policy_folder_path          = "$script:guest_assignment_folder\$($this.name)\"
-            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
-            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
-        }
-
-        Invoke-InSpec @InSpecArgs
-        
-        $ConvertArgs = @{
-            inspec_output_file_path     = "$script:guest_assignment_folder\$($this.name).json"
-            inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
-        }
-        
-        $Results = ConvertFrom-InSpec @ConvertArgs
+        $Results = $this.Get()
         
         if ("Compliant" -eq $Results.status) {
             return $true
@@ -308,9 +296,10 @@ class gcInSpec {
         
         $Results = ConvertFrom-InSpec @ConvertArgs
         
-        $this.name = $this.name
-        $this.version = $Installed_InSpec_Versions
-        $this.reasons = $Results.reason_phrases
+        $this.version       = $Installed_InSpec_Versions
+        $this.statistics    = $Results.statistics
+        $this.status        = $Results.status
+        $this.reasons       = $Results.reasons
         return $this
     }
 }
