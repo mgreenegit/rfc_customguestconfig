@@ -245,7 +245,16 @@ class gcInSpec {
     [version]$version = $Script:Supported_InSpec_Version
 
     [DscProperty(NotConfigurable)]
+    [string]$statistics
+
+    [DscProperty(NotConfigurable)]
+    [string]$status
+
+    [DscProperty(NotConfigurable)]
     [string]$reasons
+
+    [DscProperty(NotConfigurable)]
+    [string]$results
 
     <#
         This function is not implemented for Audit scenarios.
@@ -259,9 +268,9 @@ class gcInSpec {
     #>
     [bool] Test() {
     
-        $Results = $this.Get()
+        $get = $this.Get()
         
-        if ("Compliant" -eq $Results.status) {
+        if ("Compliant" -eq $get.status) {
             return $true
         }
         else {
@@ -294,12 +303,13 @@ class gcInSpec {
             inspec_cli_output_file_path = "$script:guest_assignment_folder\$($this.name).cli"
         }
         
-        $Results = ConvertFrom-InSpec @ConvertArgs
+        $get = ConvertFrom-InSpec @ConvertArgs
         
         $this.version       = $Installed_InSpec_Versions
-        $this.statistics    = $Results.statistics
-        $this.status        = $Results.status
-        $this.reasons       = $Results.reasons
+        $this.statistics    = $get.statistics
+        $this.status        = $get.status
+        $this.reasons       = $get.reasons
+        $this.results       = $get.cli
         return $this
     }
 }

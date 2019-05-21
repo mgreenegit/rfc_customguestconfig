@@ -1,4 +1,4 @@
-val_zone = attribute('DefaultFirewalldProfile', description: 'Choose the default profile for Firewalld.')
+val_zone = attribute('DefaultFirewalldProfile', description: 'Choose the default profile for Firewalld.',value: 'Public')
 
 control 'Firewalld Enabled' do
   impact 1.0
