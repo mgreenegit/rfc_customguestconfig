@@ -42,15 +42,15 @@ https://github.com/microsoft/rfc_customguestconfig/README.md#releasenotes
 #>
 Param()
 
-Configuration FirewalldEnabled {
+Configuration firewalldenabled {
 
     Import-DscResource -ModuleName 'GuestConfiguration'
 
-    Node FirewalldEnabled {
+    Node firewalldenabled {
 
-        ChefInSpecResource FirewalldEnabled {
-            Name = 'FirewalldEnabled'
-            GithubPath = "guestConfiguration/Linux/InSpecProfiles/FirewalldEnabled/"
+        ChefInSpecResource firewalldenabled {
+            Name = 'firewalldenabled'
+            GithubPath = "guestConfiguration/Linux/InSpecProfiles/firewalldenabled/"
             AttributesYmlContent = "DefaultFirewalldProfile: [public]"
         }
     }

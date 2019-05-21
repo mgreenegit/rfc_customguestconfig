@@ -1,4 +1,4 @@
-control 'WindowsFirewallEnabled' do
+control 'windowsfirewallenabled' do
   impact 1.0
   title 'Windows Firewall Enabled'
   desc 'Validates that the registry key is present indicating that the public profile in Windows Firewall is enabled'

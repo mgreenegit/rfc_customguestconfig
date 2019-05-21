@@ -42,14 +42,14 @@ https://github.com/microsoft/rfc_customguestconfig/README.md#releasenotes
 #>
 Param()
 
-Configuration WindowsFirewallEnabled {
+Configuration windowsfirewallenabled {
 
     Import-DscResource -ModuleName 'gcInSpec'
 
-    Node WindowsFirewallEnabled {
+    Node windowsfirewallenabled {
 
-        gcInSpec WindowsFirewallEnabled {
-            Name = 'WindowsFirewallEnabled'
+        gcInSpec windowsfirewallenabled {
+            Name = 'windowsfirewallenabled'
             #AttributesYmlContent = "DefaultFirewalldProfile: [public]"
         }
     }

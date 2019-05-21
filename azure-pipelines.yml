@@ -188,7 +188,7 @@ steps:
             DisplayName = 'Default Firewalld Profile.'                                                              # Policy parameter display name (mandatory)
             Description = "Choose the default profile for Firewalld."                                               # Policy parameter description (optional)
             ResourceType = "ChefInSpecResource"                                                                     # dsc configuration resource type (mandatory)
-            ResourceId = 'FirewalldEnabled'                                                                         # dsc configuration resource property name (mandatory)
+            ResourceId = 'firewalldenabled'                                                                         # dsc configuration resource property name (mandatory)
             ResourcePropertyName = "AttributesYmlContent"                                                           # dsc configuration resource name; do not include any backslashes (mandatory)
             DefaultValue = 'public'                                                                                 # Policy parameter default value (optional)
             AllowedValues = @('drop','block','public','external','dmz','work','home','internal','trusted')          # Policy parameter allowed values (optional)
