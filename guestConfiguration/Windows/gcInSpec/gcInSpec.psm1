@@ -205,7 +205,7 @@ function ConvertFrom-InSpec {
             reason_phrase  = $reason_phrase
         }
 
-        $reasons += New-Object -TypeName PSObject -Property @{
+        $reasons += @{
             code    = $control.code_desc
             phrase  = $control.reason_phrase
         }
