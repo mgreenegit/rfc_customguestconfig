@@ -26,9 +26,9 @@
                 "vmName": "windows"
             },
             "linux": {
-                "ImagePublisher": "RedHat",
-                "ImageOffer": "RHEL",
-                "ImageSKU": "7.4",
+                "ImagePublisher": "Canonical",
+                "ImageOffer": "UbuntuServer",
+                "ImageSKU": "16.04.#-LTS",
                 "osDiskName": "linux-osdisk",
                 "nicName": "linux-nic",
                 "vmName": "linux"

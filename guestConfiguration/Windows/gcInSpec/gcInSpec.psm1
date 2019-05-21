@@ -194,7 +194,7 @@ function ConvertFrom-InSpec {
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control reason phrases: $reason_phrase)"
 
-        # each control object (this might not be needed?)
+        # each control object (future use)
         $controls += New-Object -TypeName PSObject -Property @{
             id             = $control.id
             profile_id     = $control.profile_id
@@ -206,15 +206,15 @@ function ConvertFrom-InSpec {
         }
 
         $reasons += @{
-            code    = $control.code_desc
-            phrase  = $control.reason_phrase
+            Code    = "gcInSpec:gcInSpec:InSpecPolicyNotCompliant"
+            Phrase  = $control.reason_phrase
         }
     }
 
     # the overall status is based on any control being failed
     $status = if ($true -eq $is_compliant) { 'Compliant' } else { 'Non-Compliant' }
 
-    # parent object containing all info including raw output
+    # parent object containing all info including raw output (future use)
     $inspecObject = New-Object -TypeName PSObject -Property @{
         version        = $inspecResults.version
         statistics     = $statistics
@@ -245,16 +245,10 @@ class gcInSpec {
     [version]$version = $Script:Supported_InSpec_Version
 
     [DscProperty(NotConfigurable)]
-    [string]$statistics
-
-    [DscProperty(NotConfigurable)]
     [string]$status
 
     [DscProperty(NotConfigurable)]
-    [string]$reasons
-
-    [DscProperty(NotConfigurable)]
-    [string]$results
+    [string]$Reasons
 
     <#
         This function is not implemented for Audit scenarios.
@@ -305,11 +299,7 @@ class gcInSpec {
         
         $get = ConvertFrom-InSpec @ConvertArgs
         
-        $this.version       = $Installed_InSpec_Versions
-        $this.statistics    = $get.statistics
-        $this.status        = $get.status
-        $this.reasons       = $get.reasons
-        $this.results       = $get.cli
+        $this.Reasons       = $get.reasons
         return $this
     }
 }
