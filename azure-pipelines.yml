@@ -64,6 +64,18 @@ steps:
       Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force
       Get-AzPolicyDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicyDefinition -Force
 
+      # Make sure all GC assignments have been cleaned up
+      foreach ($VM in ('windows','linux')) {
+          $guestAssignments = Get-AzResource –ResourceGroupName $(resourcegroup) `
+              –ResourceType "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments/" `
+              –ResourceName "$VM/Microsoft.GuestConfiguration" `
+              -ApiVersion '2018-11-20' `
+              -ErrorAction SilentlyContinue
+          foreach ($assignment in $guestAssignments) {
+              Remove-AzResource -ResourceId $A.ResourceId -Force
+          }
+      }
+
       # hold for 30 seconds to allow georeplication of the change
       Start-Sleep 30
 
