@@ -12,7 +12,7 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'rfc_customguestconfig'
+    value: 'gcInSpec'
   - name: 'storageAccountName'
     value: 'gcinspec'
   - name: 'storageContainerName'
