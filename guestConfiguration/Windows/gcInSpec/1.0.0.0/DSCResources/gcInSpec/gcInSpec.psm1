@@ -97,7 +97,7 @@ SET HOMEDRIVE=%SystemDrive%
     $run_inspec_exec_arguements = @(
         "exec $policy_folder_path"
         "--reporter=json-min:$inspec_output_file_path cli:$inspec_cli_output_file_path"
-        "--chef-license=accept"
+        "--chef-license=acceptsilently"
     )
 
     # add attributes reference if input is provided
@@ -108,6 +108,8 @@ SET HOMEDRIVE=%SystemDrive%
     $env:HOMEDRIVE = $env:SystemDrive
 
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Starting the InSpec process with the command $InSpec_Exec_Path $run_inspec_exec_arguements" 
+    # temp log file for debugging
+    "$InSpec_Exec_Path $run_inspec_exec_arguements" | Set-Content "$env:Temp\inspecexec.txt"
     Start-Process $InSpec_Exec_Path -ArgumentList $run_inspec_exec_arguements -Wait -NoNewWindow
 }
 
