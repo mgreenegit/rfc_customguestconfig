@@ -361,11 +361,11 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: inline
-    pwsh: 'false'
+    pwsh: 'true'
     script: |
       
       # Create remediation template
-      $policy     = Get-Content '$(Build.SourcesDirectory)\policyFiles\Windows\DeployIfNotExists.json' | ConvertFrom-Json
+      $policy     = Get-Content '$(Build.SourcesDirectory)\policyFiles\Windows\DeployIfNotExists.json' | ConvertFrom-Json -Depth 25
       $template   = $policy.properties.policyRule.then.details.deployment.properties.template
       $parameters = $policy.properties.policyRule.then.details.deployment.properties.parameters
 
@@ -386,7 +386,7 @@ steps:
       }
       $template.parameters.contentUri = $contentUri
 
-      $template | ConvertTo-Json | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
+      $template | ConvertTo-Json -depth 25 | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
 
   displayName: 'Dynamically create remediation template'
 
