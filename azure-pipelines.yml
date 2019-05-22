@@ -12,9 +12,9 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec9'
+    value: 'gcInSpec10'
   - name: 'storageAccountName'
-    value: 'gcinspec9'
+    value: 'gcinspec10'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -65,6 +65,9 @@ steps:
       Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force
       Get-AzPolicyDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicyDefinition -Force
 
+      # hold for 30 seconds to allow georeplication of the change
+      Start-Sleep 30
+
   displayName: 'Clean up any existing custom Guest Configuration policies in the subscription'
 
 - task: PowerShell@2
@@ -108,7 +111,12 @@ steps:
 
         # Make custom resource available to PowerShell
         $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
-      
+
+        # validate DSC custom module
+        get-dscresource gcinspec
+        invoke-dscresource -Name gcInSpec -Method Test -ModuleName gcInSpec -Property @{name='foo'} -Verbose
+        invoke-dscresource -Name gcInSpec -Method Get -ModuleName gcInSpec -Property @{name='foo'} -Verbose
+
         # Linux configuration
         . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
         $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'
@@ -358,9 +366,6 @@ steps:
       $template.parameters.contentHash = $parameters.contentHash
       $template.parameters.contentUri = $parameters.contentUri
 
-      # get location from resource group by default
-      $template.parameters.location = '[resourceGroup().location]'
-
       $template | ConvertTo-Json | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
 
   displayName: 'Dynamically create remediation template'
@@ -371,6 +376,6 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
-      overrideParameters: -vmName 'windows'
+      overrideParameters: -vmName 'windows' -location 'centralus'
 
   displayName: 'Deploy remediation for Windows'
