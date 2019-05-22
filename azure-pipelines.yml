@@ -123,6 +123,9 @@ steps:
         # cleanup from test
         Remove-Item "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\" -Recurse -Force
 
+        # Make custom resource available to PowerShell
+        $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
+
         # Linux configuration
         . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
         $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'
