@@ -207,7 +207,7 @@ function ConvertFrom-InSpec {
 
         $reasons += @{
             Code    = "gcInSpec:gcInSpec:InSpecPolicyNotCompliant"
-            Phrase  = $control.reason_phrase
+            Phrase  = $reason_phrase
         }
     }
 
