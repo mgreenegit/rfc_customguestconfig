@@ -307,3 +307,13 @@ steps:
     artifactName: '$(windowsConfigName)'
   
     displayName: 'Publish Windows package artifact to trigger CI integration tests'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.testenv.json'
+      overrideParameters: -adminUserName $(adminUserName) -adminPassword $($(adminPassword) | ConvertTo-SecureString -asplaintext -force)
+
+  displayName: 'Deploy test servers'

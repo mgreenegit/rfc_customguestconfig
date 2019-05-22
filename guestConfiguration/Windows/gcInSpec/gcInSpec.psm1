@@ -277,7 +277,7 @@ class gcInSpec {
         }
     #>
     return $false
-    
+
     }
 
     <#
@@ -313,7 +313,7 @@ class gcInSpec {
         $this.name      = $this.name
         $this.version   = '4.3.2.1'
         $this.status    = 'Non-Compliant'
-        $this.Reasons   = 'foo'
+        $this.Reasons   = @(@{Code="gcInSpec:gcInSpec:InSpecPolicyNotCompliant";Phrase='foo'})
         return $this
     }
 }
