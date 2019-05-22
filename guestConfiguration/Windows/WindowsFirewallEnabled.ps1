@@ -49,7 +49,8 @@ Configuration windowsfirewallenabled {
     Node windowsfirewallenabled {
 
         gcInSpec windowsfirewallenabled {
-            Name = 'windowsfirewallenabled'
+            name    = 'windowsfirewallenabled'
+            version = '4.3.2.1'
             #AttributesYmlContent = "DefaultFirewalldProfile: [public]"
         }
     }
