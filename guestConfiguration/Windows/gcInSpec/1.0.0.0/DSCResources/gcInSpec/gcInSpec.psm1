@@ -293,7 +293,7 @@ function Test-TargetResource {
         $version
     )
 
-    $reasons = @(Get-TargetResource -Name $Name).Reasons
+    $reasons = @(Get-TargetResource -name $name -version $version).Reasons
 
     if ($null -ne $reasons -and $reasons.Count -gt 0) {
         return $false
