@@ -12,9 +12,9 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec11'
+    value: 'gcInSpec12'
   - name: 'storageAccountName'
-    value: 'gcinspec11'
+    value: 'gcinspec12'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -109,8 +109,8 @@ steps:
 
       # Compile DSC MOF files
 
-        # Make custom resource available to PowerShell
-        $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
+        # Make custom resource available to PowerShell/WMI
+        Copy-Item $(Build.SourcesDirectory)\guestConfiguration\Windows' $env:ProgramFiles\WindowsPowerShell\Modules -Recurse
 
         # validate DSC custom module
         winrm quickconfig -quiet
@@ -363,9 +363,9 @@ steps:
       $parameters = $policy.properties.policyRule.then.details.deployment.properties.parameters
 
       # Set parameter default values from policy in template
-      $template.parameters.configurationName = $parameters.configurationName
-      $template.parameters.contentHash = $parameters.contentHash
-      $template.parameters.contentUri = $parameters.contentUri
+      $template.parameters.configurationName = $parameters.configurationName.value
+      $template.parameters.contentHash = $parameters.contentHash.value
+      $template.parameters.contentUri = $parameters.contentUri.value
 
       $template | ConvertTo-Json | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
 
