@@ -383,22 +383,25 @@ steps:
 
       # Set parameter default values from policy in template
       $configurationName = New-Object PSObject -Property @{
-        value = $parameters.configurationName.value
+        defaultValue = $parameters.configurationName.value
         type = 'string'
       }
       $template.parameters.configurationName = $configurationName
       $ContentHash = New-Object PSObject -Property @{
-        value = $parameters.contentHash.value
+        defaultValue = $parameters.contentHash.value
         type = 'string'
       }
       $template.parameters.contentHash = $contentHash
       $ContentUri = New-Object PSObject -Property @{
-        value = $parameters.contentUri.value
+        defaultValue = $parameters.contentUri.value
         type = 'string'
       }
       $template.parameters.contentUri = $contentUri
 
       $template | ConvertTo-Json -depth 25 | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
+      
+      # temp
+      $template | ConvertTo-Json -depth 25
 
   displayName: 'Dynamically create remediation template'
 
