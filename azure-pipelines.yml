@@ -112,7 +112,7 @@ steps:
         # Make custom resource available to PowerShell/WMI
         mkdir "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec"
         Copy-Item "$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec" "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
-        Import-Module "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\gcInSpec.psd1"
+        Import-Module "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\1.0.0.0\gcInSpec.psd1"
 
         # validate DSC custom module
         winrm quickconfig -quiet
