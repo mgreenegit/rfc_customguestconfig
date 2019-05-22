@@ -111,7 +111,7 @@ steps:
 
         # Make custom resource available to PowerShell/WMI
         mkdir "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec"
-        Copy-Item "$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec" "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse
+        Copy-Item "$(Build.SourcesDirectory)\guestConfiguration\Windows\gcInSpec" "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
         Import-Module "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\gcInSpec.psd1"
 
         # validate DSC custom module
