@@ -10,7 +10,6 @@
 *.sln.docstates
 scratch.*
 *.lock
-*.mof
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

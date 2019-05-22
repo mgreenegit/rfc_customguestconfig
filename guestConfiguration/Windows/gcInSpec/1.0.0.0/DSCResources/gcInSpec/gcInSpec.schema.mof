@@ -1,0 +1,13 @@
+[ClassVersion("1.0.0.0")] 
+class Reason
+{
+    [Read] String Phrase;
+    [Read] String Code;
+};
+
+[ClassVersion("1.0.0.0"), FriendlyName("gcInSpec")]
+class gcInSpec : OMI_BaseResource
+{
+    [Key, Description("Name of the InSpec profile")] String Name;
+    [Read, EmbeddedInstance("Reason")] String Reasons[];
+};
