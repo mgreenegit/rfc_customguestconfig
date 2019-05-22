@@ -371,9 +371,21 @@ steps:
       $parameters = $policy.properties.policyRule.then.details.deployment.properties.parameters
 
       # Set parameter default values from policy in template
-      $template.parameters.configurationName = $parameters.configurationName.value
-      $template.parameters.contentHash = $parameters.contentHash.value
-      $template.parameters.contentUri = $parameters.contentUri.value
+      $configurationName = New-Object PSObject -Property @{
+        value = $parameters.configurationName.value
+        type = 'string'
+      }
+      $template.parameters.configurationName = $configurationName
+      $ContentHash = New-Object PSObject -Property @{
+        value = $parameters.contentHash.value
+        type = 'string'
+      }
+      $template.parameters.contentHash = $contentHash
+      $ContentUri = New-Object PSObject -Property @{
+        value = $parameters.contentUri.value
+        type = 'string'
+      }
+      $template.parameters.contentUri = $contentUri
 
       $template | ConvertTo-Json | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
 
