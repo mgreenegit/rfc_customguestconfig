@@ -12,7 +12,7 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec3'
+    value: 'gcInSpec5'
   - name: 'storageAccountName'
     value: 'gcinspec'
   - name: 'storageContainerName'
@@ -270,7 +270,7 @@ steps:
     pwsh: 'false'
     script: |
 
-      Start-sleep -seconds 30
+      Start-sleep -seconds 60
       
   displayName: 'Allow time for the Assignment to be replicated across geographies'
 
@@ -314,7 +314,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.testenv.json'
-      overrideParameters: -adminUserName $(adminUserName) -adminPassword $($(adminPassword) | ConvertTo-SecureString -asplaintext -force)
+      overrideParameters: -adminUsername $(adminUsername) -adminPassword $($(adminPassword) | ConvertTo-SecureString -asplaintext -force)
 
   displayName: 'Deploy test servers'
 
