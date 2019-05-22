@@ -12,9 +12,9 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec8'
+    value: 'gcInSpec9'
   - name: 'storageAccountName'
-    value: 'gcinspec8'
+    value: 'gcinspec9'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -371,6 +371,6 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
-      overrideParameters: -vmname 'windows'
+      overrideParameters: -vmName 'windows'
 
   displayName: 'Deploy remediation for Windows'

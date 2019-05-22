@@ -245,12 +245,6 @@ class gcInSpec {
     [DscProperty(Key)]
     [string]$name
 
-    [DscProperty()]
-    [version]$version = $Script:Supported_InSpec_Version
-
-    [DscProperty(NotConfigurable)]
-    [string]$status
-
     [DscProperty(NotConfigurable)]
     [string]$Reasons
 
@@ -310,9 +304,6 @@ class gcInSpec {
         $get = ConvertFrom-InSpec @ConvertArgs
         #>
 
-        $this.name      = $this.name
-        $this.version   = '4.3.2.1'
-        $this.status    = 'Non-Compliant'
         $this.Reasons   = @(@{Code="gcInSpec:gcInSpec:InSpecPolicyNotCompliant";Phrase='foo'})
         return $this
     }
