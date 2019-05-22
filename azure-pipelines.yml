@@ -411,6 +411,6 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
-      overrideParameters: -vmName 'windows' -location 'centralus'
+      overrideParameters: -vmName windows -location centralus
 
   displayName: 'Deploy remediation for Windows'
