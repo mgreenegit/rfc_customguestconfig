@@ -28,7 +28,7 @@
             "linux": {
                 "ImagePublisher": "Canonical",
                 "ImageOffer": "UbuntuServer",
-                "ImageSKU": "16.04.#-LTS",
+                "ImageSKU": "16.04-LTS",
                 "osDiskName": "linux-osdisk",
                 "nicName": "linux-nic",
                 "vmName": "linux"
