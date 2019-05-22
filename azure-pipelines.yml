@@ -43,7 +43,6 @@ trigger:
     - .github/*
 
 steps:
-
   
 - task: AzurePowerShell@4
   inputs:
@@ -117,8 +116,8 @@ steps:
         # validate DSC custom module
         winrm quickconfig -quiet
         get-dscresource gcinspec
-        invoke-dscresource -Name gcInSpec -Method Test -ModuleName gcInSpec -Property @{name='foo'} -Verbose
-        invoke-dscresource -Name gcInSpec -Method Get -ModuleName gcInSpec -Property @{name='foo'} -Verbose
+        invoke-dscresource -Name gcInSpec -Method Test -ModuleName gcInSpec -Property @{name='foo';version='4.3.2.1'} -Verbose
+        invoke-dscresource -Name gcInSpec -Method Get -ModuleName gcInSpec -Property @{name='foo'version='4.3.2.1'} -Verbose
 
         # cleanup from test
         Remove-Item "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\" -Recurse -Force
