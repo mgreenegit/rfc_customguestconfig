@@ -12,9 +12,9 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec10'
+    value: 'gcInSpec11'
   - name: 'storageAccountName'
-    value: 'gcinspec10'
+    value: 'gcinspec11'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -113,6 +113,7 @@ steps:
         $env:PSModulePath = $env:PSModulePath+';$(Build.SourcesDirectory)\guestConfiguration\Windows\'
 
         # validate DSC custom module
+        winrm quickconfig -quiet
         get-dscresource gcinspec
         invoke-dscresource -Name gcInSpec -Method Test -ModuleName gcInSpec -Property @{name='foo'} -Verbose
         invoke-dscresource -Name gcInSpec -Method Get -ModuleName gcInSpec -Property @{name='foo'} -Verbose
@@ -362,7 +363,7 @@ steps:
       $parameters = $policy.properties.policyRule.then.details.deployment.properties.parameters
 
       # Set parameter default values from policy in template
-      $template.parameters.configurationName = $parameters.configurationName.value
+      $template.parameters.configurationName = $parameters.configurationName
       $template.parameters.contentHash = $parameters.contentHash
       $template.parameters.contentUri = $parameters.contentUri
 
