@@ -12,7 +12,7 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec1'
+    value: 'gcInSpec2'
   - name: 'storageAccountName'
     value: 'gcinspec'
   - name: 'storageContainerName'
@@ -317,3 +317,36 @@ steps:
       overrideParameters: -adminUserName $(adminUserName) -adminPassword $($(adminPassword) | ConvertTo-SecureString -asplaintext -force)
 
   displayName: 'Deploy test servers'
+
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'false'
+    script: |
+      
+      # Create remediation template
+      $policy     = Get-Content '$(Build.SourcesDirectory)\policyFiles\Windows\DeployIfNotExists.json' | ConvertFrom-Json
+      $template   = $policy.properties.policyRule.then.details.deployment.properties.template
+      $parameters = $policy.properties.policyRule.then.details.deployment.properties.parameters
+
+      # Set parameter default values from policy in template
+      $template.parameters.configurationName = $parameters.configurationName.value
+      $template.parameters.contentHash = $parameters.contentHash
+      $template.parameters.contentUri = $parameters.contentUri
+
+      # get location from resource group by default
+      $template.parameters.location = '[resourceGroup().location]'
+
+      $template | ConvertTo-Json | Set-Content '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
+
+  displayName: 'Dynamically create remediation template'
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+      azureSubscription: 'ARM'
+      location: 'CentralUS'
+      resourceGroupName: $(resourcegroup)
+      csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
+      overrideParameters: -vmname 'windows'
+
+  displayName: 'Deploy remediation for Windows'
