@@ -120,6 +120,9 @@ steps:
         invoke-dscresource -Name gcInSpec -Method Test -ModuleName gcInSpec -Property @{name='foo'} -Verbose
         invoke-dscresource -Name gcInSpec -Method Get -ModuleName gcInSpec -Property @{name='foo'} -Verbose
 
+        # cleanup from test
+        Remove-Item "$env:ProgramFiles\WindowsPowerShell\Modules\gcInSpec\" -Recurse -Force
+
         # Linux configuration
         . $(Build.SourcesDirectory)\guestConfiguration\Linux\$(linuxConfigName).ps1
         $(linuxConfigName) -out '$(Build.SourcesDirectory)\guestConfiguration\Linux'
