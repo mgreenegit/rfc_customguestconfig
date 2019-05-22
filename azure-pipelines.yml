@@ -110,7 +110,8 @@ steps:
       # Compile DSC MOF files
 
         # Make custom resource available to PowerShell/WMI
-        Copy-Item $(Build.SourcesDirectory)\guestConfiguration\Windows $env:ProgramFiles\WindowsPowerShell\Modules -Recurse
+        Copy-Item "$(Build.SourcesDirectory)\guestConfiguration\Windows\ "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse
+        Import-Module gcInSpec
 
         # validate DSC custom module
         winrm quickconfig -quiet
