@@ -12,9 +12,9 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec6'
+    value: 'gcInSpec7'
   - name: 'storageAccountName'
-    value: 'gcinspec6'
+    value: 'gcinspec7'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -43,6 +43,30 @@ trigger:
     - .github/*
 
 steps:
+
+  
+- task: AzurePowerShell@4
+  inputs:
+    azureSubscription: 'ARM'
+    azurePowerShellVersion: 'latestVersion'
+    scriptType: 'inlineScript'
+    inline: |
+
+      $assignments = foreach ($initiative in (
+        Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'}
+        )) {
+          Get-AzPolicyAssignment -PolicyDefinitionId $initiative.ResourceId
+        }
+      
+      foreach ($assignment in $assignments) {
+        Remove-AzPolicyAssignment -Name $assignment.Name -Scope $assignment.Properties.scope
+        }
+      
+      Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force
+      Get-AzPolicyDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicyDefinition -Force
+
+  displayName: 'Clean up any existing custom Guest Configuration policies in the subscription'
+
 - task: PowerShell@2
   inputs:
     targetType: inline
