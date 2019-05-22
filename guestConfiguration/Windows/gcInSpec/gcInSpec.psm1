@@ -266,6 +266,7 @@ class gcInSpec {
     #>
     [bool] Test() {
     
+    <#
         $get = $this.Get()
         
         if ("Compliant" -eq $get.status) {
@@ -274,12 +275,17 @@ class gcInSpec {
         else {
             return $false
         }
+    #>
+    return $false
+    
     }
 
     <#
         Returns the Reasons information from InSpec content.
     #>
     [gcInSpec] Get() {
+
+        <#
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] required InSpec version: $($this.version)"
 
@@ -302,11 +308,12 @@ class gcInSpec {
         }
         
         $get = ConvertFrom-InSpec @ConvertArgs
-        
+        #>
+
         $this.name      = $this.name
-        $this.version   = $Installed_InSpec_Versions
-        $this.status    = $get.status
-        $this.Reasons   = $get.reasons
+        $this.version   = '4.3.2.1'
+        $this.status    = 'Non-Compliant'
+        $this.Reasons   = 'foo'
         return $this
     }
 }

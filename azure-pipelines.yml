@@ -12,7 +12,7 @@ variables:
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'resourcegroup'
-    value: 'gcInSpec0'
+    value: 'gcInSpec1'
   - name: 'storageAccountName'
     value: 'gcinspec'
   - name: 'storageContainerName'
