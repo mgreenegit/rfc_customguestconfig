@@ -134,7 +134,7 @@ function ConvertFrom-InSpec {
     $inspecResults = Get-Content $inspec_output_file_path | ConvertFrom-Json
     
     # TEST
-    $inspecResults = $inspecResults -replace '[',''
+    $inspecResults = $inspecResults -replace '\[',''
     $inspecResults = $inspecResults -replace ']',''
 
     # get raw content from CLI file
