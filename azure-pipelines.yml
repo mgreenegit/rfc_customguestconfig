@@ -185,7 +185,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
-      overrideParameters: -containerName $(storageContainerName)
+      overrideParameters: -storageAccountName $(resourcegroup) -containerName $(storageContainerName)
 
   displayName: 'Create/validate Azure storage account and container'
 
