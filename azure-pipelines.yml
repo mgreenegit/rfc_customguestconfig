@@ -334,7 +334,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentName)
+      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -344,7 +344,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(windowsAssignmentName)
+      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName $(resourcegroup)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
