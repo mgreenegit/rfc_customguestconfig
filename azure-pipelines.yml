@@ -10,7 +10,7 @@ variables:
   - name: 'minor'
     value: '2'
   - name: 'resourcegroup'
-    value: gcInSpec$(Rev:.r)
+    value: gcInSpec30
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'storageContainerName'
