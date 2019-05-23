@@ -51,7 +51,7 @@ function Install-Inspec {
     $Inspec_Package_Name = "inspec-$InSpec_Package_Version-$($InSpec_Version.Revision)-x64.msi"
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $path\$Inspec_Package_Name"
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $gcinspec_module_folder_path\$Inspec_Package_Name"
     Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$gcinspec_module_folder_path\$Inspec_Package_Name"
         
     $msiArguments = @(
@@ -301,7 +301,7 @@ function Test-TargetResource {
         $version
     )
 
-    $reasons = @(Get-TargetResource -name $name -version $version).Reasons
+    $reasons = (Get-TargetResource -name $name -version $version).Reasons
 
     if ($null -ne $reasons -and $reasons.Count -gt 0) {
         return $false
