@@ -1,9 +1,5 @@
 
 $script:Supported_InSpec_Version = [version]'4.3.2.1'
-$script:module_path = split-path -parent $MyInvocation.MyCommand.Definition
-$script:module_path = $script:module_path -replace 'Program Files', 'progra~1'
-$script:guest_assignment_folder = (Get-Item $script:module_path).Parent.FullName
-$script:guest_assignment_folder = $script:guest_assignment_folder -replace 'Program Files', 'progra~1'
 
 <#
     .SYNOPSIS
@@ -48,18 +44,21 @@ function Install-Inspec {
         [version]$InSpec_Version = $Script:Supported_InSpec_Version
     )
     
+    $gcinspec_dscresources_folder_path = split-path -parent $MyInvocation.MyCommand.Definition
+    $gcinspec_module_folder_path = (Get-Item $gcinspec_dscresources_folder_path).Parent.FullName
+    
     $InSpec_Package_Version = "$($InSpec_Version.Major).$($InSpec_Version.Minor).$($InSpec_Version.Build)"
     $Inspec_Package_Name = "inspec-$InSpec_Package_Version-$($InSpec_Version.Revision)-x64.msi"
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $script:guest_assignment_folder\$Inspec_Package_Name"
-    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$script:guest_assignment_folder\$Inspec_Package_Name"
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $path\$Inspec_Package_Name"
+    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$gcinspec_module_folder_path\$Inspec_Package_Name"
         
     $msiArguments = @(
         '/i'
-        ('"{0}"' -f "$script:guest_assignment_folder\$Inspec_Package_Name")
+        ('"{0}"' -f "$gcinspec_module_folder_path\$Inspec_Package_Name")
         '/qn'
-        "/L*v `"$script:guest_assignment_folder\$Inspec_Package_Name.log`""
+        "/L*v `"$gcinspec_module_folder_path\$Inspec_Package_Name.log`""
     )
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Installing InSpec with arguments: $msiArguments"
     Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList $msiArguments -Wait -NoNewWindow
@@ -94,10 +93,15 @@ SET HOMEDRIVE=%SystemDrive%
 "%~dp0..\embedded\bin\ruby.exe" "%~dpn0" %*
 "@ | Set-Content $InSpec_Exec_Path
 
+    # this can be an issue when testing in Windows PowerShell, InSpec does not like spaces in paths
+    foreach ($path in ($policy_folder_path,$inspec_output_file_path,$inspec_cli_output_file_path,$attributes_file_path)) {
+        $path = $path -replace 'Program Files', 'progra~1'
+    }
+    
     $run_inspec_exec_arguements = @(
         "exec $policy_folder_path"
         "--reporter=json-min:$inspec_output_file_path cli:$inspec_cli_output_file_path"
-        "--chef-license=acceptsilently"
+        "--chef-license=accept"
     )
 
     # add attributes reference if input is provided
@@ -258,17 +262,21 @@ function Get-TargetResource {
         Install-Inspec
     }
 
+    $gcinspec_dscresources_folder_path = split-path -parent $MyInvocation.MyCommand.Definition
+    $gcinspec_module_folder_path = (Get-Item $gcinspec_dscresources_folder_path).Parent.FullName
+    $guestassignment_folder_path = (Get-Item $gcinspec_module_folder_path).Parent.FullName
+
     $InSpecArgs = @{
-        policy_folder_path          = "$script:guest_assignment_folder\$name\"
-        inspec_output_file_path     = "$script:guest_assignment_folder\$name.json"
-        inspec_cli_output_file_path = "$script:guest_assignment_folder\$name.cli"
+        policy_folder_path          = "$guestassignment_folder_path\$name\"
+        inspec_output_file_path     = "$gcinspec_module_folder_path\$name.json"
+        inspec_cli_output_file_path = "$gcinspec_module_folder_path\$name.cli"
     }
 
     Invoke-InSpec @InSpecArgs
         
     $ConvertArgs = @{
-        inspec_output_file_path     = "$script:guest_assignment_folder\$name.json"
-        inspec_cli_output_file_path = "$script:guest_assignment_folder\$name.cli"
+        inspec_output_file_path     = "$gcinspec_module_folder_path\$name.json"
+        inspec_cli_output_file_path = "$gcinspec_module_folder_path\$name.cli"
     }
         
     $get = ConvertFrom-InSpec @ConvertArgs

@@ -23,6 +23,7 @@
                 "ImageSKU": "2019-Datacenter-Core",
                 "osDiskName": "windows-osdisk",
                 "nicName": "windows-nic",
+                "pipName": "windows-pip",
                 "vmName": "windows"
             },
             "linux": {
@@ -31,6 +32,7 @@
                 "ImageSKU": "16.04-LTS",
                 "osDiskName": "linux-osdisk",
                 "nicName": "linux-nic",
+                "pipName": "linux-pip",
                 "vmName": "linux"
             }
         },
@@ -75,6 +77,40 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-02-01",
+            "name": "[variables('vm').windows.pipName]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddressVersion": "IPv4",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(resourceGroup().name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-02-01",
+            "name": "[variables('vm').linux.pipName]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddressVersion": "IPv4",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(resourceGroup().name)]"
+                }
             }
         },
         {

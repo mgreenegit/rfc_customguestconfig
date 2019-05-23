@@ -366,7 +366,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.testenv.json'
-      overrideParameters: -adminUsername $(adminUsername) -adminPassword $($(adminPassword) | ConvertTo-SecureString -asplaintext -force)
+      overrideParameters: -adminUsername $(adminUsername) -adminPassword $(adminPassword)
 
   displayName: 'Deploy test servers'
 
