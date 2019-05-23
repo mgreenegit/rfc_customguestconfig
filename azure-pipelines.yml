@@ -65,7 +65,7 @@ steps:
 
       # Make sure all GC assignments have been cleaned up
       foreach ($VM in ('windows','linux')) {
-          $guestAssignments = Get-AzResource –ResourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)" `
+          $guestAssignments = Get-AzResource –ResourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r) `
               –ResourceType "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments/" `
               –ResourceName "$VM/Microsoft.GuestConfiguration" `
               -ApiVersion '2018-11-20' `
@@ -183,9 +183,9 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
-      overrideParameters: -resourcegroup "$(resourcegroup)$(Date:dd)$(Rev:.r)" -containerName $(storageContainerName)
+      overrideParameters: -resourcegroup $(resourcegroup)$(Date:dd)$(Rev:.r) -containerName $(storageContainerName)
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -197,8 +197,8 @@ steps:
     inline: |
 
       # Get Storage Context
-      $Context = Get-AzStorageAccount -ResourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)" `
-        -Name "$(resourcegroup)$(Date:dd)$(Rev:.r)" | `
+      $Context = Get-AzStorageAccount -ResourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r) `
+        -Name $(resourcegroup)$(Date:dd)$(Rev:.r) | `
         ForEach-Object {$_.Context}
 
       # Upload files
@@ -302,9 +302,9 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      overrideParameters: -assignmentName $(linuxAssignmentName) -assignmentDisplayName 'Audit when Firewalld is not enabled' -initiativeId $(linuxInitiativeId) -resourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r)
 
   displayName: 'Deploy Policy assignment for Linux'
 
@@ -312,9 +312,9 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.assignment.json'
-      overrideParameters: -assignmentName $(windowsAssignmentName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      overrideParameters: -assignmentName $(windowsAssignmentName) -assignmentDisplayName 'Audit when Windows Firewall is not enabled' -initiativeId $(windowsInitiativeId) -resourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r)
 
   displayName: 'Deploy Policy assignment for Windows'
 
@@ -332,9 +332,9 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -342,9 +342,9 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName $(resourcegroup)$(Date:dd)$(Rev:.r)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
@@ -366,7 +366,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.testenv.json'
       overrideParameters: -adminUsername $(adminUsername) -adminPassword $(adminPassword)
 
@@ -411,7 +411,7 @@ steps:
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
-      resourceGroupName: "$(resourcegroup)$(Date:dd)$(Rev:.r)"
+      resourceGroupName: $(resourcegroup)$(Date:dd)$(Rev:.r)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.remediateWindows.json'
       overrideParameters: -vmName windows -location centralus
 
