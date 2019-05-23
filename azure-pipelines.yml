@@ -9,12 +9,10 @@ variables:
     value: '1'
   - name: 'minor'
     value: '2'
+  - name: 'resourcegroup'
+    value: 'gcInSpec$(Date:dd)$(Rev:.r)'
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
-  - name: 'resourcegroup'
-    value: 'gcInSpec24'
-  - name: 'storageAccountName'
-    value: 'gcinspe24'
   - name: 'storageContainerName'
     value: 'artifacts'
   - name: 'linuxConfigName'
@@ -51,6 +49,7 @@ steps:
     scriptType: 'inlineScript'
     inline: |
 
+      # Remove all existing asignments and custom GuestConfig policies
       $assignments = foreach ($initiative in (
         Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'}
         )) {
@@ -75,6 +74,9 @@ steps:
               Remove-AzResource -ResourceId $A.ResourceId -Force
           }
       }
+
+      # Remove all existing test environments
+      Get-AzResourceGroup gcInSpec* | Remove-AzResourceGroup -Force
 
       # hold for 30 seconds to allow georeplication of the change
       Start-Sleep 30
@@ -183,7 +185,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
-      overrideParameters: -storageAccountName $(storageAccountName) -containerName $(storageContainerName)
+      overrideParameters: -resourcegroup $(resourcegroup) -containerName $(storageContainerName)
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -196,7 +198,7 @@ steps:
 
       # Get Storage Context
       $Context = Get-AzStorageAccount -ResourceGroupName $(resourcegroup) `
-        -Name $(storageAccountName) | `
+        -Name $(resourcegroup) | `
         ForEach-Object {$_.Context}
 
       # Upload files
