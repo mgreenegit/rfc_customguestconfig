@@ -185,7 +185,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.storagecontainer.json'
-      overrideParameters: -resourcegroup $(resourcegroup) -containerName $(storageContainerName)
+      overrideParameters: -containerName $(storageContainerName)
 
   displayName: 'Create/validate Azure storage account and container'
 
@@ -334,7 +334,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(linuxAssignmentName) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(linuxAssignmentName)
 
   displayName: 'Deploy Policy role assignment for Linux'
 
@@ -344,7 +344,7 @@ steps:
       location: 'CentralUS'
       resourceGroupName: $(resourcegroup)
       csmFile: '$(Build.SourcesDirectory)\deploymentFiles\deploy.roleassignment.json'
-      overrideParameters: -assignmentName $(windowsAssignmentName) -resourceGroupName $(resourcegroup)
+      overrideParameters: -assignmentName $(windowsAssignmentName)
 
   displayName: 'Deploy Policy role assignment for Windows'
   
