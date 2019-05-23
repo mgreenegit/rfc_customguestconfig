@@ -1,0 +1,1 @@
+set-netfirewallprofile -profile Public -enabled False

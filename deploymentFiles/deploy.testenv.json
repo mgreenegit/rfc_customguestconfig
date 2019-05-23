@@ -80,40 +80,6 @@
             }
         },
         {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-02-01",
-            "name": "[variables('vm').windows.pipName]",
-            "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "Basic"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "publicIpAddressVersion": "IPv4",
-                "dnsSettings": {
-                    "domainNameLabel": "[concat(resourceGroup().name,'-windows')]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-02-01",
-            "name": "[variables('vm').linux.pipName]",
-            "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "Basic"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "publicIpAddressVersion": "IPv4",
-                "dnsSettings": {
-                    "domainNameLabel": "resourceGroup().name,'-linux')]"
-                }
-            }
-        },
-        {
             "apiVersion": "2019-02-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('vm').windows.nicName]",
