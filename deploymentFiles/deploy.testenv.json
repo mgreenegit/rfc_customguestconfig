@@ -92,7 +92,7 @@
                 "idleTimeoutInMinutes": 4,
                 "publicIpAddressVersion": "IPv4",
                 "dnsSettings": {
-                    "domainNameLabel": "[toLower(resourceGroup().name)]"
+                    "domainNameLabel": "[concat(resourceGroup().name,'-windows')]"
                 }
             }
         },
@@ -109,7 +109,7 @@
                 "idleTimeoutInMinutes": 4,
                 "publicIpAddressVersion": "IPv4",
                 "dnsSettings": {
-                    "domainNameLabel": "[toLower(resourceGroup().name)]"
+                    "domainNameLabel": "resourceGroup().name,'-linux')]"
                 }
             }
         },
