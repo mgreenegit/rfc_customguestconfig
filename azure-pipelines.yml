@@ -46,7 +46,7 @@ steps:
     pwsh: 'true'
     script: |
 
-      $resourcegroup = 'gcinspec$(Build.BuildNumber) -replace '.',''
+      $resourcegroup = 'gcinspec$(Build.BuildNumber)' -replace '\.',''
       Write-Host "##vso[task.setvariable variable=resourcegroup]$resourcegroup"
       
   displayName: 'Dynamically set resourcegroup env var'
