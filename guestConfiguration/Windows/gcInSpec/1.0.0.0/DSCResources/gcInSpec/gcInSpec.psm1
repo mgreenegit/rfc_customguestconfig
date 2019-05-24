@@ -256,6 +256,8 @@ function Get-TargetResource {
     $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
     if ($Installed_InSpec_Versions -notcontains $version) {
         Install-Inspec
+        
+        $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
         if ($Installed_InSpec_Versions -notcontains $version) {
             throw 'InSpec installation was not successful'
         }
