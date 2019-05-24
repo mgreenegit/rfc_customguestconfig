@@ -49,13 +49,13 @@ function Install-Inspec {
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $gcinspec_module_folder_path\$Inspec_Package_Name"
-    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$env:TEMP\$Inspec_Package_Name"
+    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$env:windir\temp\$Inspec_Package_Name"
         
     $msiArguments = @(
         '/i'
-        ('"{0}"' -f "$env:TEMP\$Inspec_Package_Name")
+        ('"{0}"' -f "$env:windir\temp\$Inspec_Package_Name")
         '/qn'
-        "/L*v `"$env:TEMP\$Inspec_Package_Name.log`""
+        "/L*v `"$env:windir\temp\$Inspec_Package_Name.log`""
     )
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Installing InSpec with arguments: $msiArguments"
     Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList $msiArguments -Wait -NoNewWindow
@@ -109,7 +109,7 @@ SET HOMEDRIVE=%SystemDrive%
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Starting the InSpec process with the command $InSpec_Exec_Path $run_inspec_exec_arguements" 
     
     # temp log file for debugging
-    "$InSpec_Exec_Path $run_inspec_exec_arguements" | Set-Content "$env:Temp\inspecexec.txt"
+    "$InSpec_Exec_Path $run_inspec_exec_arguements" | Set-Content "$env:windir\temp\inspecexec.txt"
     Start-Process $InSpec_Exec_Path -ArgumentList $run_inspec_exec_arguements -Wait -NoNewWindow
 }
 
@@ -256,6 +256,9 @@ function Get-TargetResource {
     $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
     if ($Installed_InSpec_Versions -notcontains $version) {
         Install-Inspec
+        if ($Installed_InSpec_Versions -notcontains $version) {
+            throw 'InSpec installation was not successful'
+        }
     }
 
     $configuration_folder = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name\"

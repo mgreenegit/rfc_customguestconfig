@@ -38,7 +38,7 @@
         },
         "diskType": "Standard_LRS",
         "vmSize": "Standard_DS3_V2",
-        "ipConfigName": "ipConfig",
+        "ipConfigName": "ipConfig0",
         "addressPrefix": "10.0.0.0/24",
         "subnetName": "subnet0",
         "subnetPrefix": "10.0.0.0/24",
