@@ -211,11 +211,10 @@ function ConvertFrom-InSpec {
         }
     }
 
-    # parent object containing all info including raw output (future use)
-    $inspecObject = New-Object -TypeName PSObject -Property @{
+    # parent hashtable containing all info including raw output (future use)
+    $inspecObject = @{
         version        = $inspecResults.version
         statistics     = $statistics
-        controls       = $controls
         status         = $is_compliant
         cli            = $inspecCLI
         reasons        = $reasons
@@ -264,19 +263,14 @@ function Get-TargetResource {
     Invoke-InSpec @args
     $args.remove('policy_folder_path')
     $inspec = ConvertFrom-InSpec @args
-    
-    $reasons_data = @()
-    $reasons_data += @{
-        Code    = 'gcInSpec:gcInSpec:InSpecPolicyNotCompliant'
-        Phrase  = $inspec.cli
-    }
 
     $return = @{
         name    = $name
         version = $Installed_InSpec_Version
         status  = $inspec.status
-        Reasons = $reasons_data
+        Reasons = $inspec.reasons
     }
+
     #TEMP
     set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debug.log
     return $return
