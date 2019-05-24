@@ -3,4 +3,12 @@
 #$get
 #$get.reasons
 #Get-Content c:\ProgramData\GuestConfig\debug.log
-Get-Content C:\ProgramData\GuestConfig\Configuration\windowsfirewallenabled\Modules\windowsfirewallenabled\windowsfirewallenabled.cli
+#write-host 'Convert'
+#Get-Content c:\ProgramData\GuestConfig\debugConvert.log
+#write-host 'Convert0'
+#Get-Content c:\ProgramData\GuestConfig\debugConvert0.log
+#write-host 'Return'
+#Get-Content c:\ProgramData\GuestConfig\debugReturn.log
+write-host 'ReturnReasons'
+Get-Content c:\ProgramData\GuestConfig\debugReturnReasons.log
+

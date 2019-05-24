@@ -125,33 +125,18 @@ function ConvertFrom-InSpec {
     [cmdletbinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$inspec_output_file_path,
-        [Parameter(Mandatory = $true)]
-        [string]$inspec_cli_output_file_path
+        [string]$inspec_output_file_path
     )
     
     # get JSON file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading json output from $inspec_output_file_path" 
     $inspecResults = Get-Content $inspec_output_file_path | ConvertFrom-Json
 
-    # get raw content from CLI file
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_cli_output_file_path" 
-    $inspecCLI = Get-Content $inspec_cli_output_file_path
-    # remove color encoding from CLI output
-    $inspecCLI = $inspecCLI -replace '\x1b\[[0-9;]*m', ''
-
-    # create and set statistics object
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Setting duration statistics to: $($inspecResults.statistics.duration)"
-    $statistics = $inspecResults.statistics.duration
-    
-    # there can be multiple controls in a profile
-    $controls = @()
-
-    # store reasons code/phrase for Get
+    # reasons code/phrase for Get
     $reasons = @()
 
     # results are compliant until a failed test is returned
-    [bool]$is_compliant = $true
+    [bool]$profile_compliant = $true
 
     # loop through each control and create objects for the array; set compliance
     foreach ($control in $inspecResults.controls) {
@@ -165,7 +150,7 @@ function ConvertFrom-InSpec {
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control status: $($control.status)"
         
         if ('failed' -eq $control.status) {
-            $is_compliant = $false
+            $profile_compliant = $false
             $test_compliant = $false
         }
 
@@ -184,49 +169,25 @@ function ConvertFrom-InSpec {
                 Write-Verbose "Policy test failed, but no code description found for the reason phrase."
             }
             
-            if ($null -ne $control.message) {
-                Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control message: $($control.status)"
-                $reason_phrase += "Test message: $($control.message)"
-            } else {
-                Write-Verbose "Policy test failed, but no message found for the reason phrase."
-            }
         }
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control reason phrases: $reason_phrase)"
-
-        # each control object (future use)
-        $controls += New-Object -TypeName PSObject -Property @{
-            id             = $control.id
-            profile_id     = $control.profile_id
-            profile_sha256 = $control.profile_sha256
-            status         = $control.status
-            code_desc      = $control.code_desc
-            message        = $control.message
-            reason_phrase  = $reason_phrase
-        }
-        
+    
         $reasons += @{
             Code    = "gcInSpec:gcInSpec:InSpecPolicyNotCompliant"
             Phrase  = $reason_phrase
         }
     }
 
-    # parent hashtable containing all info including raw output (future use)
-    $inspecObject = @{
-        version        = $inspecResults.version
-        statistics     = $statistics
-        status         = $is_compliant
-        cli            = $inspecCLI
-        reasons        = $reasons
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($profile_compliant)"
+
+    $inspec = @{
+        name    = $name
+        version = $Installed_InSpec_Version
+        status  = $profile_compliant
+        reasons = $reasons
     }
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($inspecObject.status)"
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reason phrase: $($inspecObject.reasons)"
-
-    # TEMP
-    set-content -Value $reasons -Path c:\ProgramData\GuestConfig\debugConvert.log
-    set-content -Value $inspecObject.reasons -Path c:\ProgramData\GuestConfig\debugConvert0.log
-
-    return $inspecObject
+    return $inspec
 }
 
 function Get-TargetResource {
@@ -250,18 +211,12 @@ function Get-TargetResource {
     $Installed_InSpec_Version = (Get-InstalledInSpecVersions).version
     if ($Installed_InSpec_Version -ne $version) {
         Install-Inspec $version
-        
-        $Installed_InSpec_Version = (Get-InstalledInSpecVersions).version
-        if ($Installed_InSpec_Version -ne $version) {
-            throw 'InSpec installation was not successful'
-        }
     }
 
     $configuration_folder = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name"
     $args = @{
         policy_folder_path          = "$configuration_folder\"
         inspec_output_file_path     = "$configuration_folder\$name.json"
-        inspec_cli_output_file_path = "$configuration_folder\$name.cli"
     }
 
     Invoke-InSpec @args
