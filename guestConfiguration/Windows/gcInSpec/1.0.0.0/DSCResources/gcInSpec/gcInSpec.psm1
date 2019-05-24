@@ -266,6 +266,7 @@ function Get-TargetResource {
     }
 
     Invoke-InSpec @args
+    $args.remove('policy_folder_path')
     $get = ConvertFrom-InSpec @args
 
     return $get.Reasons
