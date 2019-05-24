@@ -222,6 +222,10 @@ function ConvertFrom-InSpec {
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($inspecObject.status)"
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reason phrase: $($inspecObject.reasons)"
 
+    # TEMP
+    set-content -Value $reasons -Path c:\ProgramData\GuestConfig\debugConvert.log
+    set-content -Value $inspecObject.reasons -Path c:\ProgramData\GuestConfig\debugConvert0.log
+
     return $inspecObject
 }
 
@@ -272,7 +276,8 @@ function Get-TargetResource {
     }
 
     #TEMP
-    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debug.log
+    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debugReturn.log
+    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debugReturnReasons.log
     return $return
 }
 
