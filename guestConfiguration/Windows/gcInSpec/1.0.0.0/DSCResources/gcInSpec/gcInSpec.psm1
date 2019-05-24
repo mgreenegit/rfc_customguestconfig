@@ -274,7 +274,12 @@ function Get-TargetResource {
     $args.remove('policy_folder_path')
     $get = ConvertFrom-InSpec @args
 
-    return $get.Reasons
+    $return = @{
+        name    = $name
+        version = $Installed_InSpec_Versions
+        Reasons = $get.Reasons
+    }
+    return $return
 }
 
 function Test-TargetResource {
