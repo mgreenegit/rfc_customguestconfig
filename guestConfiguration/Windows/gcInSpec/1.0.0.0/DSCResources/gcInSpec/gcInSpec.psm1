@@ -265,8 +265,8 @@ function Get-TargetResource {
     $args.remove('policy_folder_path')
     $inspec = ConvertFrom-InSpec @args
     
-    $Reasons = @()
-    $Reasons += @{
+    $reasons_data = @()
+    $reasons_data += @{
         Code    = 'gcInSpec:gcInSpec:InSpecPolicyNotCompliant'
         Phrase  = $inspec.cli
     }
@@ -275,8 +275,10 @@ function Get-TargetResource {
         name    = $name
         version = $Installed_InSpec_Version
         status  = $inspec.status
-        Reasons = $Reasons
+        Reasons = $reasons_data
     }
+    #TEMP
+    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debug.log
     return $return
 }
 
