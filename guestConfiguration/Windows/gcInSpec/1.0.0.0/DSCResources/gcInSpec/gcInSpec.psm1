@@ -222,15 +222,12 @@ function ConvertFrom-InSpec {
         Phrase  = $inspecCLI
     }
 
-    # the overall status is based on any control being failed
-    $status = if ($true -eq $is_compliant) { 'Compliant' } else { 'Non-Compliant' }
-
     # parent object containing all info including raw output (future use)
     $inspecObject = New-Object -TypeName PSObject -Property @{
         version        = $inspecResults.version
         statistics     = $statistics
         controls       = $controls
-        status         = $status
+        status         = $is_compliant
         cli            = $inspecCLI
         reasons        = $reasons
     }
@@ -252,7 +249,7 @@ function Get-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [String[]]
         $version
     )
 
@@ -300,19 +297,12 @@ function Test-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [String[]]
         $version
     )
 
     $status = (Get-TargetResource -name $name -version $version).status
-
-    if ('Non-Compliant' -eq $status) {
-        return $false
-    }
-
-    if ('Compliant' -eq $status) {
-        return $true
-    }
+    return $status
 }
 
 function Set-TargetResource {
@@ -326,7 +316,7 @@ function Set-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [String[]]
         $version
     )
 
