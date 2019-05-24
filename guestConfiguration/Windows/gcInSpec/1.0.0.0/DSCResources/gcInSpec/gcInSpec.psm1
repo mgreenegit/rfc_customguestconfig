@@ -44,21 +44,18 @@ function Install-Inspec {
         [version]$InSpec_Version = $Script:Supported_InSpec_Version
     )
     
-    $gcinspec_dscresources_folder_path = split-path -parent $MyInvocation.MyCommand.Definition
-    $gcinspec_module_folder_path = (Get-Item $gcinspec_dscresources_folder_path).Parent.FullName
-    
     $InSpec_Package_Version = "$($InSpec_Version.Major).$($InSpec_Version.Minor).$($InSpec_Version.Build)"
     $Inspec_Package_Name = "inspec-$InSpec_Package_Version-$($InSpec_Version.Revision)-x64.msi"
     $Inspec_Download_Uri = "https://packages.chef.io/files/stable/inspec/$InSpec_Package_Version/windows/2016/$Inspec_Package_Name"
         
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Downloading InSpec to $gcinspec_module_folder_path\$Inspec_Package_Name"
-    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$gcinspec_module_folder_path\$Inspec_Package_Name"
+    Invoke-WebRequest -Uri $Inspec_Download_Uri -TimeoutSec 120 -OutFile "$env:TEMP\$Inspec_Package_Name"
         
     $msiArguments = @(
         '/i'
-        ('"{0}"' -f "$gcinspec_module_folder_path\$Inspec_Package_Name")
+        ('"{0}"' -f "$env:TEMP\$Inspec_Package_Name")
         '/qn'
-        "/L*v `"$gcinspec_module_folder_path\$Inspec_Package_Name.log`""
+        "/L*v `"$env:TEMP\$Inspec_Package_Name.log`""
     )
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Installing InSpec with arguments: $msiArguments"
     Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList $msiArguments -Wait -NoNewWindow
@@ -93,7 +90,7 @@ SET HOMEDRIVE=%SystemDrive%
 "%~dp0..\embedded\bin\ruby.exe" "%~dpn0" %*
 "@ | Set-Content $InSpec_Exec_Path
 
-    # this can be an issue when testing in Windows PowerShell, InSpec does not like spaces in paths
+    # TEMP this can be an issue when testing in Windows PowerShell, InSpec does not like spaces in paths
     foreach ($path in ($policy_folder_path,$inspec_output_file_path,$inspec_cli_output_file_path,$attributes_file_path)) {
         $path = $path -replace 'Program Files', 'progra~1'
     }
@@ -109,9 +106,8 @@ SET HOMEDRIVE=%SystemDrive%
         $run_inspec_exec_arguements += " --attrs $attributes_file_path"
     }
 
-    $env:HOMEDRIVE = $env:SystemDrive
-
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Starting the InSpec process with the command $InSpec_Exec_Path $run_inspec_exec_arguements" 
+    
     # temp log file for debugging
     "$InSpec_Exec_Path $run_inspec_exec_arguements" | Set-Content "$env:Temp\inspecexec.txt"
     Start-Process $InSpec_Exec_Path -ArgumentList $run_inspec_exec_arguements -Wait -NoNewWindow
@@ -262,27 +258,17 @@ function Get-TargetResource {
         Install-Inspec
     }
 
-    $gcinspec_dscresources_folder_path = split-path -parent $MyInvocation.MyCommand.Definition
-    $gcinspec_module_folder_path = (Get-Item $gcinspec_dscresources_folder_path).Parent.FullName
-    $guestassignment_folder_path = (Get-Item $gcinspec_module_folder_path).Parent.FullName
-
-    $InSpecArgs = @{
-        policy_folder_path          = "$guestassignment_folder_path\$name\"
-        inspec_output_file_path     = "$gcinspec_module_folder_path\$name.json"
-        inspec_cli_output_file_path = "$gcinspec_module_folder_path\$name.cli"
+    $configuration_folder = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name\"
+    $args = @{
+        policy_folder_path          = "$configuration_folder"
+        inspec_output_file_path     = "$configuration_folder\$name.json"
+        inspec_cli_output_file_path = "$configuration_folder\$name.cli"
     }
 
-    Invoke-InSpec @InSpecArgs
-        
-    $ConvertArgs = @{
-        inspec_output_file_path     = "$gcinspec_module_folder_path\$name.json"
-        inspec_cli_output_file_path = "$gcinspec_module_folder_path\$name.cli"
-    }
-        
-    $get = ConvertFrom-InSpec @ConvertArgs
- 
-    $Reasons = $get.Reasons
-    return $Reasons
+    Invoke-InSpec @args
+    $get = ConvertFrom-InSpec @args
+
+    return $get.Reasons
 }
 
 function Test-TargetResource {
