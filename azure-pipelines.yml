@@ -10,7 +10,7 @@ variables:
   - name: 'minor'
     value: '2'
   - name: 'resourcegroup'
-    value: 'gcinspec35'
+    value: 'gcinspec40'
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'storageContainerName'
