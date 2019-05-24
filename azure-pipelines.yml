@@ -9,8 +9,6 @@ variables:
     value: '1'
   - name: 'minor'
     value: '2'
-  - name: 'resourcegroup'
-    value: 'gcinspec40'
   - name: 'requiredModules'
     value: 'GuestConfiguration' 
   - name: 'storageContainerName'
@@ -42,6 +40,17 @@ trigger:
 
 steps:
   
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    pwsh: 'true'
+    script: |
+
+      $resourcegroup = 'gcinspec$(Build.BuildNumber) -replace '.',''
+      Write-Host "##vso[task.setvariable variable=resourcegroup]$resourcegroup"
+      
+  displayName: 'Dynamically set resourcegroup env var'
+
 - task: AzurePowerShell@4
   inputs:
     azureSubscription: 'ARM'
