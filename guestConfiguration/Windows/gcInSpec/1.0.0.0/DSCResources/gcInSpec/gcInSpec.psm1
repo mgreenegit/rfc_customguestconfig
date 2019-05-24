@@ -76,8 +76,6 @@ function Invoke-InSpec {
         [string]$policy_folder_path,
         [Parameter(Mandatory = $true)]
         [string]$inspec_output_file_path,
-        [Parameter(Mandatory = $true)]
-        [string]$inspec_cli_output_file_path,
         [string]$attributes_file_path
     )
     
@@ -90,13 +88,13 @@ SET HOMEDRIVE=%SystemDrive%
 "@ | Set-Content $InSpec_Exec_Path
 
     # TEMP this can be an issue when testing in Windows PowerShell, InSpec does not like spaces in paths
-    foreach ($path in ($policy_folder_path,$inspec_output_file_path,$inspec_cli_output_file_path,$attributes_file_path)) {
+    foreach ($path in ($policy_folder_path,$inspec_output_file_path,$attributes_file_path)) {
         $path = $path -replace 'Program Files', 'progra~1'
     }
     
     $run_inspec_exec_arguements = @(
         "exec $policy_folder_path"
-        "--reporter=json-min:$inspec_output_file_path cli:$inspec_cli_output_file_path"
+        "--reporter=json-min:$inspec_output_file_path"
         "--chef-license=accept"
     )
 
@@ -106,9 +104,6 @@ SET HOMEDRIVE=%SystemDrive%
     }
 
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Starting the InSpec process with the command $InSpec_Exec_Path $run_inspec_exec_arguements" 
-    
-    # temp log file for debugging
-    "$InSpec_Exec_Path $run_inspec_exec_arguements" | Set-Content "$env:windir\temp\inspecexec.txt"
     Start-Process $InSpec_Exec_Path -ArgumentList $run_inspec_exec_arguements -Wait -NoNewWindow
 }
 
