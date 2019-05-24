@@ -264,8 +264,9 @@ function Get-TargetResource {
     Invoke-InSpec @args
     $args.remove('policy_folder_path')
     $inspec = ConvertFrom-InSpec @args
-
-    $Reasons = @{
+    
+    $Reasons = @()
+    $Reasons += @{
         Code    = 'gcInSpec:gcInSpec:InSpecPolicyNotCompliant'
         Phrase  = $inspec.cli
     }
