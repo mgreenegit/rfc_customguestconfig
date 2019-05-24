@@ -380,18 +380,6 @@ steps:
       overrideParameters: -adminUsername $(adminUsername) -adminPassword (ConvertTo-SecureString -String $(adminPassword) -AsPlainText -Force)
 
   displayName: 'Deploy test servers'
-
-- task: AzurePowerShell@4
-  inputs:
-    azureSubscription: 'ARM'
-    azurePowerShellVersion: 'latestVersion'
-    scriptType: 'inlineScript'
-    inline: |
-
-      # script actually executes in VM
-      Invoke-AzVMRunCommand -ResourceGroupName $(resourcegroup) -VMName windows -CommandId RunPowerShellScript -ScriptPath '$(Build.SourcesDirectory)\deploymentFiles\runCommand.ps1' -Verbose
-
-  displayName: 'Disable public firewall profile inside Windows VM'
  
 - task: PowerShell@2
   inputs:
@@ -437,3 +425,15 @@ steps:
       overrideParameters: -vmName windows -location centralus
 
   displayName: 'Deploy remediation for Windows'
+
+- task: AzurePowerShell@4
+  inputs:
+    azureSubscription: 'ARM'
+    azurePowerShellVersion: 'latestVersion'
+    scriptType: 'inlineScript'
+    inline: |
+
+      # script actually executes in VM
+      Invoke-AzVMRunCommand -ResourceGroupName $(resourcegroup) -VMName windows -CommandId RunPowerShellScript -ScriptPath '$(Build.SourcesDirectory)\deploymentFiles\runCommand.ps1' -Verbose
+
+  displayName: 'Disable public firewall profile inside Windows VM'

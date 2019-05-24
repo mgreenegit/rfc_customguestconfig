@@ -217,6 +217,11 @@ function ConvertFrom-InSpec {
         }
     }
 
+    $reasons += @{
+        Code    = "gcInSpec:gcInSpec:CLI"
+        Phrase  = $inspecCLI
+    }
+
     # the overall status is based on any control being failed
     $status = if ($true -eq $is_compliant) { 'Compliant' } else { 'Non-Compliant' }
 
@@ -277,6 +282,7 @@ function Get-TargetResource {
     $return = @{
         name    = $name
         version = $Installed_InSpec_Versions
+        status  = $get.status
         Reasons = $get.Reasons
     }
     return $return
@@ -298,13 +304,15 @@ function Test-TargetResource {
         $version
     )
 
-    $reasons = (Get-TargetResource -name $name -version $version).Reasons
+    $status = (Get-TargetResource -name $name -version $version).status
 
-    if ($null -ne $reasons -and $reasons.Count -gt 0) {
+    if ('Non-Compliant' -eq $status) {
         return $false
     }
 
-    return $true
+    if ('Compliant' -eq $status) {
+        return $true
+    }
 }
 
 function Set-TargetResource {
