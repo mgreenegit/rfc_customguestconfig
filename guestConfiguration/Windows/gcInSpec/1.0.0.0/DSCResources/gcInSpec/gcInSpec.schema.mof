@@ -9,7 +9,7 @@ class Reason
 class gcInSpec : OMI_BaseResource
 {
     [Key, Description("Name of the InSpec profile")] String name;
-    [Write, Description("The version of InSpec that is expected to be installed")] String version[];
+    [Write, Description("The version of InSpec that is expected to be installed")] String version;
     [Read, Description("Compliance status returned from InSpec")] Boolean status;
     [Read, EmbeddedInstance("Reason")] String Reasons[];
 };

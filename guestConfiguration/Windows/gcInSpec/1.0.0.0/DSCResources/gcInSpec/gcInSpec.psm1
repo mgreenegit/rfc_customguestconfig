@@ -1,6 +1,4 @@
 
-$script:Supported_InSpec_Version = [version]'4.3.2.1'
-
 <#
     .SYNOPSIS
         Returns an object with details of InSpec installation
@@ -16,16 +14,16 @@ function Get-InstalledInSpecVersions {
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Checking for InSpec..."
     
     $Installed_InSpec = Get-CimInstance win32_product -Filter "Name LIKE 'InSpec%'"
-    $Installed_InSpec_Versions = $Installed_InSpec | ForEach-Object { $_.Version }
-    $Installed_InSpec = if ($null -eq $Installed_InSpec_Versions) { $false } else { $true }
+    $Installed_InSpec_Version = $Installed_InSpec.Version
+    $Installed_InSpec = if ($null -eq $Installed_InSpec_Version) { $false } else { $true }
     
     $returnStatus = New-Object -TypeName PSObject -ArgumentList @{
         Installed = $Installed_InSpec
-        Versions  = $Installed_InSpec_Versions
+        Version  = $Installed_InSpec_Version
     }
 
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] InSpec installed: $Installed_InSpec"
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] InSpec versions: $Installed_InSpec_Versions"
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] InSpec versions: $Installed_InSpec_Version"
 
 
     return $returnStatus
@@ -41,7 +39,8 @@ function Get-InstalledInSpecVersions {
 function Install-Inspec {
     [cmdletbinding()]
     param(
-        [version]$InSpec_Version = $Script:Supported_InSpec_Version
+        [Parameter(Mandatory = $true)]
+        [version]$InSpec_Version
     )
     
     $InSpec_Package_Version = "$($InSpec_Version.Major).$($InSpec_Version.Minor).$($InSpec_Version.Build)"
@@ -134,10 +133,6 @@ function ConvertFrom-InSpec {
     # get JSON file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading json output from $inspec_output_file_path" 
     $inspecResults = Get-Content $inspec_output_file_path | ConvertFrom-Json
-    
-    # TEST
-    $inspecResults = $inspecResults -replace '\[',''
-    $inspecResults = $inspecResults -replace ']',''
 
     # get raw content from CLI file
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_cli_output_file_path" 
@@ -147,9 +142,7 @@ function ConvertFrom-InSpec {
 
     # create and set statistics object
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Setting duration statistics to: $($inspecResults.statistics.duration)"
-    $statistics = New-Object -TypeName PSObject -Property @{
-        Duration = $inspecResults.statistics.duration
-    }
+    $statistics = $inspecResults.statistics.duration
     
     # there can be multiple controls in a profile
     $controls = @()
@@ -165,8 +158,9 @@ function ConvertFrom-InSpec {
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Processing reasons data for: $($control.code_desc)"
         
-        [bool]$test_compliant = $true
-        [bool]$test_skipped = $false
+        [bool]$test_compliant   = $true
+        [bool]$test_skipped     = $false
+        $reason_phrase          = $null
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control status: $($control.status)"
         
@@ -181,7 +175,7 @@ function ConvertFrom-InSpec {
 
         # any non-compliant tests should start with this text
         if ($false -eq $test_compliant -and $false -eq $test_skipped) {
-            $reason_phrase = "InSpec policy test failed."
+            $reason_phrase = 'InSpec policy test failed. '
         
             if ($null -ne $control.code_desc) {
                 Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control description: $($control.status)"
@@ -210,16 +204,11 @@ function ConvertFrom-InSpec {
             message        = $control.message
             reason_phrase  = $reason_phrase
         }
-
+        
         $reasons += @{
             Code    = "gcInSpec:gcInSpec:InSpecPolicyNotCompliant"
             Phrase  = $reason_phrase
         }
-    }
-
-    $reasons += @{
-        Code    = "gcInSpec:gcInSpec:CLI"
-        Phrase  = $inspecCLI
     }
 
     # parent object containing all info including raw output (future use)
@@ -232,7 +221,7 @@ function ConvertFrom-InSpec {
         reasons        = $reasons
     }
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($inspecObject.status)"
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reason phrase: $($inspecObject.reason_phrases)"
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reason phrase: $($inspecObject.reasons)"
 
     return $inspecObject
 }
@@ -249,38 +238,43 @@ function Get-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String[]]
+        [String]
         $version
     )
 
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] required InSpec version: $version"
 
-    $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
-    if ($Installed_InSpec_Versions -notcontains $version) {
-        Install-Inspec
+    $Installed_InSpec_Version = (Get-InstalledInSpecVersions).version
+    if ($Installed_InSpec_Version -ne $version) {
+        Install-Inspec $version
         
-        $Installed_InSpec_Versions = (Get-InstalledInSpecVersions).versions
-        if ($Installed_InSpec_Versions -notcontains $version) {
+        $Installed_InSpec_Version = (Get-InstalledInSpecVersions).version
+        if ($Installed_InSpec_Version -ne $version) {
             throw 'InSpec installation was not successful'
         }
     }
 
-    $configuration_folder = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name\"
+    $configuration_folder = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name"
     $args = @{
-        policy_folder_path          = "$configuration_folder"
+        policy_folder_path          = "$configuration_folder\"
         inspec_output_file_path     = "$configuration_folder\$name.json"
         inspec_cli_output_file_path = "$configuration_folder\$name.cli"
     }
 
     Invoke-InSpec @args
     $args.remove('policy_folder_path')
-    $get = ConvertFrom-InSpec @args
+    $inspec = ConvertFrom-InSpec @args
+
+    $Reasons = @{
+        Code    = 'gcInSpec:gcInSpec:InSpecPolicyNotCompliant'
+        Phrase  = $inspec.cli
+    }
 
     $return = @{
         name    = $name
-        version = $Installed_InSpec_Versions
-        status  = $get.status
-        Reasons = $get.Reasons
+        version = $Installed_InSpec_Version
+        status  = $inspec.status
+        Reasons = $Reasons
     }
     return $return
 }
@@ -297,7 +291,7 @@ function Test-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String[]]
+        [String]
         $version
     )
 
@@ -316,7 +310,7 @@ function Set-TargetResource {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String[]]
+        [String]
         $version
     )
 
