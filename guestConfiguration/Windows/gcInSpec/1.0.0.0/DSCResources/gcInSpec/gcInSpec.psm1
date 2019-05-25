@@ -73,9 +73,7 @@ function Install-Inspec {
 function Invoke-InSpec {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$policy_folder_path,
-        [Parameter(Mandatory = $true)]
-        [string]$inspec_output_file_path,
+        [string]$inspec_profile_path,
         [string]$attributes_file_path
     )
     
@@ -88,13 +86,15 @@ SET HOMEDRIVE=%SystemDrive%
 "@ | Set-Content $InSpec_Exec_Path
 
     # TEMP this can be an issue when testing in Windows PowerShell, InSpec does not like spaces in paths
-    foreach ($path in ($policy_folder_path,$inspec_output_file_path,$attributes_file_path)) {
+    foreach ($path in ($inspec_profile_path,$attributes_file_path)) {
         $path = $path -replace 'Program Files', 'progra~1'
     }
     
+    $name = (Get-ChildItem $inspec_profile_path).Parent.FullName
+
     $run_inspec_exec_arguements = @(
-        "exec $policy_folder_path"
-        "--reporter=json-min:$inspec_output_file_path"
+        "exec $inspec_profile_path"
+        "--reporter=json-min:$inspec_profile_path\$name.json cli:$inspec_profile_path\$name.cli"
         "--chef-license=accept"
     )
 
@@ -123,6 +123,7 @@ function ConvertFrom-InSpec {
         [string]$inspec_output_path
     )
     
+    $name = (Get-ChildItem $inspec_output_path).Parent.FullName
     $json = "$inspec_output_path\$name.json"
     $cli = "$inspec_output_path\$name.cli"
 
@@ -199,10 +200,10 @@ function Get-TargetResource {
         Install-Inspec $version
     }
 
-    $profile_folder_path = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name"
+    $inspec_profile_path = "C:\ProgramData\GuestConfig\Configuration\$name\Modules\$name\"
 
-    Invoke-InSpec $profile_folder_path
-    $inspec = ConvertFrom-InSpec $profile_folder_path
+    Invoke-InSpec $inspec_profile_path
+    $inspec = ConvertFrom-InSpec $inspec_profile_path
 
     $get = @{
         name    = $name
@@ -213,8 +214,6 @@ function Get-TargetResource {
 
     #TEMP
     set-content -Value $get.reasons -Path c:\ProgramData\GuestConfig\debugReturn.log
-    set-content -Value $get.reasons[0] -Path c:\ProgramData\GuestConfig\debugReturn0.log
-    set-content -Value $get.reasons[1] -Path c:\ProgramData\GuestConfig\debugReturn1.log
     return $get
 }
 
