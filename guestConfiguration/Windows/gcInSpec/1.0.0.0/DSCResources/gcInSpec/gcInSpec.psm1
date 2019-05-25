@@ -223,7 +223,7 @@ function Get-TargetResource {
     $args.remove('policy_folder_path')
     $inspec = ConvertFrom-InSpec @args
 
-    $return = @{
+    $get = @{
         name    = $name
         version = $Installed_InSpec_Version
         status  = $inspec.status
@@ -231,9 +231,10 @@ function Get-TargetResource {
     }
 
     #TEMP
-    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debugReturn.log
-    set-content -Value $return.reasons -Path c:\ProgramData\GuestConfig\debugReturnReasons.log
-    return $return
+    set-content -Value $get.reasons -Path c:\ProgramData\GuestConfig\debugReturn.log
+    set-content -Value $get.reasons[0] -Path c:\ProgramData\GuestConfig\debugReturn0.log
+    set-content -Value $get.reasons[1] -Path c:\ProgramData\GuestConfig\debugReturn1.log
+    return $get
 }
 
 function Test-TargetResource {
