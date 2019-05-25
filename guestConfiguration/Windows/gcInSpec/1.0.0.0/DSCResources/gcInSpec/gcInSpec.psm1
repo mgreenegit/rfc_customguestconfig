@@ -166,7 +166,10 @@ function ConvertFrom-InSpec {
             
         }
 
-        if (!$reason_phrase) {$reason_phrase = 'All tests returned success.'}
+        if ($true -eq $test_compliant -and $false -eq $test_skipped) {
+            Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control description: $($control.status)"
+            $reason_phrase = 'Test returned success.'
+        }
 
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control reason phrases: $reason_phrase)"
     
