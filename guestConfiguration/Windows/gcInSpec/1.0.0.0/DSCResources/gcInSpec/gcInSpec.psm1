@@ -166,6 +166,8 @@ function ConvertFrom-InSpec {
             
         }
 
+        if (!$reason_phrase) {$reason_phrase = 'All tests returned success.'}
+
         Write-Verbose "[$((get-date).getdatetimeformats()[45])] Control reason phrases: $reason_phrase)"
     
         $reasons += @{
