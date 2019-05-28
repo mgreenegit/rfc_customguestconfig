@@ -90,7 +90,7 @@ SET HOMEDRIVE=%SystemDrive%
         $path = $path -replace 'Program Files', 'progra~1'
     }
     
-    $name = (Get-ChildItem $inspec_profile_path).Parent.FullName
+    $name = (Get-ChildItem $inspec_profile_path).Parent.Name
 
     $run_inspec_exec_arguements = @(
         "exec $inspec_profile_path"
