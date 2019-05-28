@@ -94,7 +94,7 @@ SET HOMEDRIVE=%SystemDrive%
 
     $run_inspec_exec_arguements = @(
         "exec $inspec_profile_path"
-        "--reporter=json-min:$inspec_profile_path\$name.json cli:$inspec_profile_path\$name.cli"
+        "--reporter=json-min:$inspec_profile_path$name.json cli:$inspec_profile_path$name.cli"
         "--chef-license=accept"
     )
 
@@ -124,15 +124,15 @@ function ConvertFrom-InSpec {
     )
     
     $name = (Get-ChildItem $inspec_output_path).Parent.Name
-    $json = "$inspec_output_path\$name.json"
-    $cli = "$inspec_output_path\$name.cli"
+    $json = "$inspec_output_path$name.json"
+    $cli = "$inspec_output_path$name.cli"
 
     # get JSON file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading json output from $inspec_output_path$name.json" 
     $inspecJson = Get-Content $json | ConvertFrom-Json
 
     # get CLI file containing InSpec output
-    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_output_path\$name.cli" 
+    Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_output_path$name.cli" 
     $inspecCli = Get-Content $cli -replace '\x1b\[[0-9;]*m', ''
     
     # reasons code/phrase for Get
