@@ -123,7 +123,7 @@ function ConvertFrom-InSpec {
         [string]$inspec_output_path
     )
     
-    $name = (Get-ChildItem $inspec_output_path).Parent.FullName
+    $name = (Get-ChildItem $inspec_output_path).Parent.Name
     $json = "$inspec_output_path\$name.json"
     $cli = "$inspec_output_path\$name.cli"
 
@@ -212,8 +212,6 @@ function Get-TargetResource {
         Reasons = $inspec.reasons
     }
 
-    #TEMP
-    set-content -Value $get.reasons -Path c:\ProgramData\GuestConfig\debugReturn.log
     return $get
 }
 
