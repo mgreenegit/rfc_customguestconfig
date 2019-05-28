@@ -133,7 +133,7 @@ function ConvertFrom-InSpec {
 
     # get CLI file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_output_path$name.cli" 
-    $inspecCli = Get-Content $cli -replace '\x1b\[[0-9;]*m', ''
+    $inspecCli = (Get-Content $cli) -replace '\x1b\[[0-9;]*m', ''
     
     # reasons code/phrase for Get
     $reasons = @()
