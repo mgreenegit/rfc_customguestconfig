@@ -133,7 +133,7 @@ function ConvertFrom-InSpec {
 
     # get CLI file containing InSpec output
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Reading cli output from $inspec_output_path$name.cli" 
-    $inspecCli = (Get-Content $cli) -replace '\x1b\[[0-9;]*m', ''
+    [string]$inspecCli = (Get-Content $cli) -replace '\x1b\[[0-9;]*m', ''
     
     # reasons code/phrase for Get
     $reasons = @()
@@ -164,7 +164,7 @@ function ConvertFrom-InSpec {
     Write-Verbose "[$((get-date).getdatetimeformats()[45])] Overall status: $($profile_compliant)"
 
     $reasons += @{
-        Code    = "gcInSpec:gcInSpec:InSpecPolicyNotCompliant"
+        Code    = "gcInSpec:gcInSpec:InSpecRawOutput"
         Phrase  = $inspecCli
     }
 
