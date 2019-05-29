@@ -1,7 +1,7 @@
 [ClassVersion("1.0.0.0")] 
 class Reason
 {
-    [Read] String Phrase;
+    [Read] String Phrase[];
     [Read] String Code;
 };
 
