@@ -338,6 +338,7 @@ steps:
   displayName: 'Allow time for the Assignment to be replicated across geographies'
 
 - task: AzureResourceGroupDeployment@2
+  continueOnError: true
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
@@ -348,6 +349,7 @@ steps:
   displayName: 'Deploy Policy role assignment for Linux'
 
 - task: AzureResourceGroupDeployment@2
+  continueOnError: true
   inputs:
       azureSubscription: 'ARM'
       location: 'CentralUS'
