@@ -20,7 +20,7 @@
             "windows": {
                 "ImagePublisher": "MicrosoftWindowsServer",
                 "ImageOffer": "WindowsServer",
-                "ImageSKU": "2016-Datacenter",
+                "ImageSKU": "2019-Datacenter-Core",
                 "osDiskName": "windows-osdisk",
                 "nicName": "windows-nic",
                 "pipName": "windows-pip",
