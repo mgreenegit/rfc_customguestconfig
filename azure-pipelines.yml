@@ -69,8 +69,8 @@ steps:
         Remove-AzPolicyAssignment -Name $assignment.Name -Scope $assignment.Properties.scope -ErrorAction SilentlyContinue
         }
       
-      Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force
-      Get-AzPolicyDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicyDefinition -Force
+      Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force -ErrorAction SilentlyContinue
+      Get-AzPolicyDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicyDefinition -Force -ErrorAction SilentlyContinue
 
       # Make sure all GC assignments have been cleaned up
       foreach ($VM in ('windows','linux')) {
