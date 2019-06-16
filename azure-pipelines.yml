@@ -66,7 +66,7 @@ steps:
         }
       
       foreach ($assignment in $assignments) {
-        Remove-AzPolicyAssignment -Name $assignment.Name -Scope $assignment.Properties.scope
+        Remove-AzPolicyAssignment -Name $assignment.Name -Scope $assignment.Properties.scope -ErrorAction SilentlyContinue
         }
       
       Get-AzPolicySetDefinition -Custom | ? {$_.Properties.metadata.category -eq 'Guest Configuration'} | Remove-AzPolicySetDefinition -Force
@@ -80,7 +80,7 @@ steps:
               -ApiVersion '2018-11-20' `
               -ErrorAction SilentlyContinue
           foreach ($assignment in $guestAssignments) {
-              Remove-AzResource -ResourceId $A.ResourceId -Force
+              Remove-AzResource -ResourceId $A.ResourceId -Force -ErrorAction SilentlyContinue
           }
       }
 
